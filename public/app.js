@@ -210,6 +210,15 @@ function setupEventListeners() {
     chatInput.value = "";
     appendUserMessage(query);
 
+    // Show immediate thinking bubble
+    const thinkingId = "thinking-" + Date.now();
+    const thinkingDiv = document.createElement("div");
+    thinkingDiv.id = thinkingId;
+    thinkingDiv.className = "chat-bubble agent";
+    thinkingDiv.innerHTML = `<span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent-acid); display: inline-flex; align-items: center; gap: 6px;"><span class="brand-pulse" style="width:6px;height:6px;"></span> CONSULTING QLOO TASTE GRAPH...</span>`;
+    chatMessages.appendChild(thinkingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
     try {
       const res = await fetch("/api/agent/chat", {
         method: "POST",
@@ -217,8 +226,16 @@ function setupEventListeners() {
         body: JSON.stringify({ query, activePackage: currentTourPackage })
       });
       const data = await res.json();
-      appendAgentMessage(data.answer, data.dataPoints);
+      const el = document.getElementById(thinkingId);
+      if (el) el.remove();
+      if (data && data.answer) {
+        appendAgentMessage(data.answer, data.dataPoints);
+      } else {
+        appendAgentMessage("I analyzed the taste graph for this query, but no explicit match was returned. Try asking about fan fashion, dining, or afterparty spots.", []);
+      }
     } catch (err) {
+      const el = document.getElementById(thinkingId);
+      if (el) el.remove();
       appendAgentMessage("Apologies, I encountered a connection issue while querying the taste graph.", []);
     }
   });
@@ -280,10 +297,13 @@ function playSonicIdentity(artistSlug) {
       osc.stop(ctx.currentTime + 2.6);
     });
 
-    btnSonicPreview.textContent = "Playing...";
+    btnSonicPreview.classList.add("is-playing");
+    const textSpan = btnSonicPreview.querySelector(".btn-text");
+    if (textSpan) textSpan.textContent = "Synthesizing...";
     setTimeout(() => {
-      btnSonicPreview.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> Sonic Identity`;
-    }, 2500);
+      btnSonicPreview.classList.remove("is-playing");
+      if (textSpan) textSpan.textContent = "Sonic Identity";
+    }, 2600);
   } catch (err) {
     console.warn("AudioContext not supported or blocked", err);
   }

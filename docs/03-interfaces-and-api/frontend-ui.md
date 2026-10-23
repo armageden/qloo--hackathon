@@ -4,7 +4,7 @@
 
 Implemented in `public/index.html`, `public/app.js`, and `public/style.css`.
 
-The frontend is a vanilla JavaScript client designed with modern glassmorphism aesthetics inspired by backstage tour riders and cultural agency dashboards.
+The frontend is a vanilla JavaScript client designed with an editorial cultural console aesthetic inspired by backstage tour riders, Live Nation production specs, and Boiler Room minimalism.
 
 ## Architecture & Assets
 
@@ -15,7 +15,7 @@ The frontend is a vanilla JavaScript client designed with modern glassmorphism a
   - Dynamic API key validation modal
   - Real-time Markdown rider export formatting and file download
   - Interactive agent chat submission and quick prompt buttons
-- **Styles (`public/style.css`):** Custom CSS variables, responsive typography (`Plus Jakarta Sans` and `Space Grotesk`), radar meters, and dark-mode styling with zero external CSS frameworks.
+- **Styles (`public/style.css`):** Custom CSS design system, responsive typography (`Inter`, `Space Grotesk`, and `JetBrains Mono`), tactile obsidian cards, and electric acid chartreuse accents with zero external CSS frameworks.
 
 ## Key UI Sections
 
