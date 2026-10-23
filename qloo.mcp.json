@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "tourcraft": {
+      "command": "node",
+      "args": ["cli.js", "mcp"],
+      "env": {
+        "QLOO_BASE_URL": "https://hackathon.api.qloo.com"
+      }
+    }
+  }
+}

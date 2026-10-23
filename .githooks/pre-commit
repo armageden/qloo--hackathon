@@ -1,0 +1,7 @@
+#!/bin/sh
+# Advisory Docs Drift Check (Non-blocking: always exits 0)
+echo "[TourCraft Hook] Running documentation integrity check..."
+if command -v node >/dev/null 2>&1; then
+  node scripts/docs-check.js || echo "[TourCraft Hook] WARNING: Docs check reported drift. Run 'npm run docs:check' to resolve."
+fi
+exit 0

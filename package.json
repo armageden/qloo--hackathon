@@ -1,0 +1,30 @@
+{
+  "name": "tourcraft-qloo-agent",
+  "version": "1.0.0",
+  "description": "Autonomous Cultural Tour & Live Experience Engine powered by the Qloo Taste Graph",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "cli": "node cli.js",
+    "test": "node test.js",
+    "docs:check": "node scripts/docs-check.js"
+  },
+  "keywords": [
+    "qloo",
+    "cultural-ai",
+    "taste-graph",
+    "agentic-ai",
+    "live-nation",
+    "touring",
+    "entertainment",
+    "hackathon",
+    "jason-calacanis"
+  ],
+  "author": "TourCraft Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

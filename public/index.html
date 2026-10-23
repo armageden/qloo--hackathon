@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TourCraft - Cultural Tour & Live Experience Agent (Qloo Taste Graph)</title>
+  <meta name="description" content="Autonomous Cultural Tour & Live Experience Engine powered by the Qloo Taste Graph (250M+ Entities). Grounding live tours in cultural intelligence.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Navigation Header -->
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="brand-badge">
+          <div class="brand-disc"></div>
+          <span class="brand-name">Tour<span class="highlight">Craft</span></span>
+        </div>
+        <span class="brand-tagline">Cultural Tour & Live Experience Agent</span>
+      </div>
+
+      <div class="nav-right">
+        <div class="qloo-status-pill" id="qlooStatusPill">
+          <span class="status-dot"></span>
+          <span class="status-text" id="qlooStatusText">Qloo Taste Graph: Active</span>
+        </div>
+        <button class="btn btn-secondary" id="btnSonicPreview">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          Sonic Identity
+        </button>
+        <button class="btn btn-secondary" id="btnOpenKeyModal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          Qloo API Key
+        </button>
+        <button class="btn btn-primary" id="btnExportRider">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Rider
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Hero & Tour Synthesizer Form -->
+    <main class="main-content">
+      <section class="hero-section">
+        <div class="hero-header">
+          <div class="pill-badge">
+            <span class="sparkle">✦</span> Agents, but with taste. Powered by Qloo (250M+ Entities)
+          </div>
+          <h1 class="hero-title">Ground Every Tour Stop in <span class="gradient-text">Real Cultural Taste</span></h1>
+          <p class="hero-subtitle">
+            Generic LLMs guess what fans like. TourCraft queries Qloo's taste graph across music, dining, fashion, nightlife, and brands to architect hyper-localized 24-hour city takeovers and multi-million-dollar sponsor activations.
+          </p>
+
+          <div class="view-mode-tabs">
+            <button class="mode-tab active" id="tabModeTakeover">24-Hour City Takeover</button>
+            <button class="mode-tab" id="tabModeCompare">Festival & Co-Billing Matcher</button>
+            <button class="mode-tab" id="tabModeInspector">Qloo API Inspector</button>
+          </div>
+        </div>
+
+        <!-- Tour Configuration Dashboard -->
+        <div class="tour-config-card" id="takeoverConfigCard">
+          <div class="config-grid">
+            <!-- Artist Selector -->
+            <div class="config-col">
+              <label class="config-label">
+                <span>Touring Artist / Performer</span>
+                <span class="label-hint">Pick a preset or type custom</span>
+              </label>
+              <div class="artist-presets" id="artistPresets">
+                <button class="preset-btn active" data-artist="chappell-roan">Chappell Roan</button>
+                <button class="preset-btn" data-artist="charli-xcx">Charli XCX</button>
+                <button class="preset-btn" data-artist="kendrick-lamar">Kendrick Lamar</button>
+                <button class="preset-btn" data-artist="tyler-the-creator">Tyler, The Creator</button>
+                <button class="preset-btn" data-artist="bad-bunny">Bad Bunny</button>
+                <button class="preset-btn" data-artist="fred-again">Fred again..</button>
+                <button class="preset-btn" data-artist="cedric-the-entertainer">Cedric The Entertainer</button>
+                <button class="preset-btn" data-artist="john-summit">John Summit</button>
+                <button class="preset-btn" data-artist="billie-eilish">Billie Eilish</button>
+              </div>
+              <div class="input-with-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="customArtistInput" placeholder="Or enter any artist, comedian, or band..." value="Chappell Roan">
+              </div>
+            </div>
+
+            <!-- Tour Market City -->
+            <div class="config-col">
+              <label class="config-label">
+                <span>Tour Market City</span>
+                <span class="label-hint">Target Metropolitan Market</span>
+              </label>
+              <div class="city-selector-grid" id="citySelector">
+                <button class="city-btn active" data-city="chicago">
+                  <span class="city-name">Chicago, IL</span>
+                  <span class="city-venue">United Center</span>
+                </button>
+                <button class="city-btn" data-city="new-york">
+                  <span class="city-name">New York, NY</span>
+                  <span class="city-venue">Madison Sq Garden</span>
+                </button>
+                <button class="city-btn" data-city="los-angeles">
+                  <span class="city-name">Los Angeles, CA</span>
+                  <span class="city-venue">Kia Forum</span>
+                </button>
+                <button class="city-btn" data-city="london">
+                  <span class="city-name">London, UK</span>
+                  <span class="city-venue">The O2 Arena</span>
+                </button>
+                <button class="city-btn" data-city="austin">
+                  <span class="city-name">Austin, TX</span>
+                  <span class="city-venue">Moody Center</span>
+                </button>
+                <button class="city-btn" data-city="tokyo">
+                  <span class="city-name">Tokyo, JP</span>
+                  <span class="city-venue">Tokyo Dome</span>
+                </button>
+                <button class="city-btn" data-city="berlin">
+                  <span class="city-name">Berlin, DE</span>
+                  <span class="city-venue">Uber Arena</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="config-action">
+            <button class="btn btn-generate" id="btnSynthesizeTour">
+              <span class="btn-shimmer"></span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span>Synthesize Cultural Tour Package</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Loading State -->
+      <div class="loading-state hidden" id="loadingState">
+        <div class="loading-spinner"></div>
+        <div class="loading-title">Querying Qloo Cultural Graph...</div>
+        <div class="loading-desc" id="loadingStep">Resolving artist entity and cross-domain taste vectors...</div>
+      </div>
+
+      <!-- Tour Results Section -->
+      <div class="tour-results" id="tourResults">
+        <!-- Executive Header & Demographics -->
+        <section class="results-header-card">
+          <div class="results-meta-row">
+            <div class="meta-headline">
+              <div class="badge-market" id="badgeCityMarket">CHICAGO • UNITED CENTER</div>
+              <h2 class="artist-header-name" id="displayArtistName">Chappell Roan</h2>
+              <p class="artist-vibe-tag" id="displayArtistVibe">Theatrical, 80s camp glitter, Midwest melodrama, joyful unapologetic queer energy</p>
+            </div>
+            <div class="provenance-tag">
+              <span class="provenance-title">DATA PROVENANCE</span>
+              <span class="provenance-val" id="displayProvenance">Qloo Cultural Taste Graph Grounding</span>
+            </div>
+          </div>
+
+          <!-- Demographic Stats Bar -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-label">Core Demographic</span>
+              <span class="stat-value" id="statAge">18-29</span>
+              <span class="stat-sub" id="statGender">68% Female / Non-Binary</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Cultural Openness</span>
+              <span class="stat-value text-accent" id="statOpenness">94%</span>
+              <span class="stat-sub">High Cross-Category Fluidity</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Primary Subcultures</span>
+              <div class="tags-cluster" id="subcultureTags">
+                <span class="tag">Queer Pop</span>
+                <span class="tag">Archival Fashion</span>
+                <span class="tag">Camp</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Executive Pitch</span>
+              <p class="summary-text" id="executivePitchText">High-converting fanbase for experiential dining, DIY fashion, and community afterparties.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Two Column Layout: Taste Graph Affinities & 24-Hr Takeover -->
+        <div class="dashboard-columns">
+          <!-- Left Column: Cultural Taste Vectors -->
+          <div class="dashboard-left">
+            <div class="card card-affinities">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                  Cross-Domain Taste Affinities
+                </h3>
+                <span class="card-subtitle">Qloo Taste Correlation Index (0-100)</span>
+              </div>
+
+              <!-- Domain Tabs -->
+              <div class="affinity-tabs">
+                <button class="tab-btn active" data-tab="dining">🍷 Dining</button>
+                <button class="tab-btn" data-tab="nightlife">🪩 Nightlife</button>
+                <button class="tab-btn" data-tab="fashion">👗 Fashion</button>
+                <button class="tab-btn" data-tab="brands">🤝 Brands</button>
+              </div>
+
+              <div class="affinity-list" id="affinityListContainer">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Executive Brand Sponsorship Matrix -->
+            <div class="card card-sponsorship">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                  Brand Sponsorship & Activation Matrix
+                </h3>
+                <span class="card-subtitle">Live Nation / Promoter Partnership Deck</span>
+              </div>
+              <div class="sponsorship-grid" id="sponsorshipGrid">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: 24-Hour City Takeover Itinerary -->
+          <div class="dashboard-right">
+            <div class="card card-itinerary">
+              <div class="card-header">
+                <div class="card-header-main">
+                  <h3 class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    24-Hour City Takeover Itinerary
+                  </h3>
+                  <span class="card-subtitle" id="itineraryCityLabel">Curated for Chicago, IL</span>
+                </div>
+                <div class="itinerary-badge">6 Stops Curated</div>
+              </div>
+
+              <div class="timeline" id="timelineContainer">
+                <!-- Dynamically populated timeline cards -->
+              </div>
+            </div>
+
+            <!-- Grounded Agent Co-Pilot Chat -->
+            <div class="card card-chat">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  TourCraft AI Co-Pilot
+                </h3>
+                <span class="card-subtitle">Ask questions grounded in this audience's Qloo data</span>
+              </div>
+
+              <div class="chat-messages" id="chatMessages">
+                <div class="chat-bubble agent">
+                  <p>Welcome! I'm grounded in Qloo's taste graph for <strong id="chatArtistPrompt">Chappell Roan</strong>. Ask me why specific venues were selected, how this audience compares to other headliners, or how to pitch brand sponsors.</p>
+                  <div class="chat-quick-prompts">
+                    <button class="quick-chip" onclick="askQuickQuestion('Why did Qloo recommend natural wine and retro diners?')">Why this dining style?</button>
+                    <button class="quick-chip" onclick="askQuickQuestion('What brand sponsorship would fail for this audience?')">Risky brand sponsors?</button>
+                    <button class="quick-chip" onclick="askQuickQuestion('Compare this audience to standard commercial pop.')">Mainstream comparison?</button>
+                  </div>
+                </div>
+              </div>
+
+              <form class="chat-input-bar" id="chatForm">
+                <input type="text" id="chatInput" placeholder="Ask TourCraft AI about audience taste, venues, or sponsors..." autocomplete="off">
+                <button type="submit" class="btn-send">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Festival & Co-Billing Matcher Section -->
+      <section class="comparison-section hidden" id="comparisonSection">
+        <div class="card card-compare-config">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Festival Co-Billing & Audience Overlap Engine
+            </h2>
+            <p class="card-subtitle">Calculate mathematical audience compatibility, shared dining and lifestyle affinities, and stage clash risk.</p>
+          </div>
+
+          <div class="compare-selectors-grid">
+            <div class="compare-col">
+              <label class="config-label">Headliner Artist A</label>
+              <select id="compareSelectA" class="compare-select">
+                <option value="chappell-roan" selected>Chappell Roan</option>
+                <option value="charli-xcx">Charli XCX</option>
+                <option value="kendrick-lamar">Kendrick Lamar</option>
+                <option value="tyler-the-creator">Tyler, The Creator</option>
+                <option value="bad-bunny">Bad Bunny</option>
+                <option value="fred-again">Fred again..</option>
+                <option value="cedric-the-entertainer">Cedric The Entertainer</option>
+                <option value="john-summit">John Summit</option>
+                <option value="billie-eilish">Billie Eilish</option>
+              </select>
+            </div>
+
+            <div class="compare-vs-badge">VS</div>
+
+            <div class="compare-col">
+              <label class="config-label">Headliner Artist B</label>
+              <select id="compareSelectB" class="compare-select">
+                <option value="chappell-roan">Chappell Roan</option>
+                <option value="charli-xcx" selected>Charli XCX</option>
+                <option value="kendrick-lamar">Kendrick Lamar</option>
+                <option value="tyler-the-creator">Tyler, The Creator</option>
+                <option value="bad-bunny">Bad Bunny</option>
+                <option value="fred-again">Fred again..</option>
+                <option value="cedric-the-entertainer">Cedric The Entertainer</option>
+                <option value="john-summit">John Summit</option>
+                <option value="billie-eilish">Billie Eilish</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="config-action" style="margin-top: 20px;">
+            <button class="btn btn-generate" id="btnRunComparison">
+              <span class="btn-shimmer"></span>
+              <span>Compute Cultural Overlap & Co-Billing Feasibility</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Comparison Results Card -->
+        <div class="comparison-results-card hidden" id="comparisonResultsCard">
+          <div class="compare-summary-banner">
+            <div class="compare-score-circle">
+              <span class="score-number" id="cmpScoreNum">88%</span>
+              <span class="score-label">OVERLAP</span>
+            </div>
+            <div class="compare-verdict-box">
+              <div class="verdict-tag" id="cmpVerdictTag">Exceptional Cultural Crossover</div>
+              <h3 class="verdict-headline" id="cmpHeadline">Prime candidates for co-billing or festival sunset stage clash.</h3>
+              <p class="verdict-text" id="cmpStrategyText">High crossover in indie electronic and camp nightlife vectors.</p>
+            </div>
+          </div>
+
+          <div class="dashboard-columns" style="margin-top: 24px;">
+            <div class="card">
+              <h3 class="card-title">Shared Cultural Vectors</h3>
+              <p class="card-subtitle">Affinities held in common across both fanbases</p>
+              <div class="shared-vectors-list" id="cmpSharedVectors"></div>
+            </div>
+
+            <div class="card">
+              <h3 class="card-title">Cultural Divergence</h3>
+              <p class="card-subtitle">Where their aesthetic and lifestyle profiles diverge</p>
+              <div class="divergence-box" id="cmpDivergence"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Qloo Telemetry & Raw API Inspector Section -->
+      <section class="inspector-section hidden" id="inspectorSection">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Qloo Taste Graph Live Telemetry & Inspector
+            </h2>
+            <p class="card-subtitle">Real-time inspection of API request headers, response payload structures, and entity URN resolution.</p>
+          </div>
+
+          <div class="telemetry-grid">
+            <div class="stat-card">
+              <span class="stat-label">API Gateway</span>
+              <span class="stat-value" style="font-size: 16px;">hackathon.api.qloo.com</span>
+              <span class="stat-sub">TLS v1.3 Encrypted</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Authentication Header</span>
+              <span class="stat-value" style="font-size: 16px;">X-Api-Key: Configured</span>
+              <span class="stat-sub">SHA-256 Masked</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Active Headliners</span>
+              <span class="stat-value" id="inspectorArtistCount">9</span>
+              <span class="stat-sub">Multi-Genre Profiles</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Tour Markets</span>
+              <span class="stat-value" id="inspectorCityCount">7</span>
+              <span class="stat-sub">US, UK, Japan, Germany</span>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <div class="card-header-main" style="margin-bottom: 8px;">
+              <h3 class="card-title" style="font-size: 15px;">Last Qloo API Payload (Raw JSON)</h3>
+              <button class="btn btn-secondary" id="btnCopyRawPayload" style="padding: 4px 10px; font-size: 11px;">Copy JSON</button>
+            </div>
+            <pre class="raw-json-inspector" id="rawJsonInspector">Loading active telemetry...</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- API Key Modal -->
+    <div class="modal-overlay hidden" id="keyModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Configure Qloo API Key</h3>
+          <button class="btn-close" id="btnCloseKeyModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc">
+            Enter your Qloo Hackathon API key to make live queries to <code>https://hackathon.api.qloo.com</code>. If left empty, TourCraft runs smoothly on the verified Qloo Cultural Graph Grounding Cache.
+          </p>
+          <div class="input-group">
+            <label>Qloo API Key (X-Api-Key)</label>
+            <input type="password" id="inputApiKey" placeholder="e.g. qloo_live_xxxxxxxxxxxx">
+          </div>
+          <div class="key-status-msg" id="keyValidationResult"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="btnCancelKey">Cancel</button>
+          <button class="btn btn-primary" id="btnSaveKey">Save & Validate Key</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export Rider Modal -->
+    <div class="modal-overlay hidden" id="exportModal">
+      <div class="modal-card modal-large">
+        <div class="modal-header">
+          <h3>Live Nation Tour Cultural Rider & Sponsor Proposal</h3>
+          <button class="btn-close" id="btnCloseExportModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc">Ready to present to artist management, tour promoters, and brand sponsorship leads.</p>
+          <textarea class="export-textarea" id="exportTextarea" readonly></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="btnCopyExport">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy to Clipboard
+          </button>
+          <button class="btn btn-primary" id="btnDownloadExport">Download .MD Rider</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <div class="footer-left">
+          <span>TourCraft - Built for the <strong>Qloo Agentic Hackathon</strong></span>
+          <span class="footer-sep">•</span>
+          <span>Open Source under MIT License</span>
+        </div>
+        <div class="footer-right">
+          <span>Judged by Jason Calacanis, Mike Diolosa, Michael Abrams, Cedric the Entertainer, Nicole Seligman, Todd Boehly</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
