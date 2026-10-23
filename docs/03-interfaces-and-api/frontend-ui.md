@@ -2,20 +2,23 @@
 
 # Frontend User Interface
 
-Implemented in `public/index.html`, `public/app.js`, and `public/style.css`.
+Implemented in `public/index.html`, `public/styles.css`, `public/script.js` (Mostar cinematic experience) and `public/tourcraft.html`, `public/tourcraft.css`, `public/tourcraft.js` (TourCraft intelligence console).
 
-The frontend is a vanilla JavaScript client designed with an editorial cultural console aesthetic inspired by backstage tour riders, Live Nation production specs, and Boiler Room minimalism.
+The frontend encompasses two complementary interfaces:
+1. **Mostar Cinematic Experience (`public/index.html`):** A high-performance, multi-layered parallax scroll narrative recreating Mostar city with Ogg Medium typography, 3D layer depths, and seamless infinite card carousel.
+2. **TourCraft Cultural Console (`public/tourcraft.html`):** A backstage tour rider and live experience console powered by Qloo taste graph intelligence.
 
 ## Architecture & Assets
 
-- **Markup (`public/index.html`):** Semantic HTML5 layout featuring header telemetry, tour generator controls, audience demographics, cross-domain affinity tabs, 24-hour timeline, sponsor activation grid, and conversational co-pilot.
-- **Client Logic (`public/app.js`):** Reactive state manager handling:
-  - Preset and custom artist selection
-  - Tour market city switching
-  - Dynamic API key validation modal
-  - Real-time Markdown rider export formatting and file download
-  - Interactive agent chat submission and quick prompt buttons
-- **Styles (`public/style.css`):** Custom CSS design system, responsive typography (`Inter`, `Space Grotesk`, and `JetBrains Mono`), tactile obsidian cards, and electric acid chartreuse accents with zero external CSS frameworks.
+- **Cinematic Landing Page:**
+  - **Markup (`public/index.html`):** Precise 3-stage scroll layout with sticky 100vh stage, transparent PNG scene layers, and sight cards.
+  - **Styles (`public/styles.css`):** Layer styling, fluid typography, and custom CSS variables governing multi-layer transforms.
+  - **Animation Engine (`public/script.js`):** Sub-pixel lerp scroll smoothing, pointer parallax, and infinite carousel normalization.
+
+- **TourCraft Experience Engine:**
+  - **Markup (`public/tourcraft.html`):** Semantic HTML5 layout featuring header telemetry, tour generator controls, audience demographics, cross-domain affinity tabs, 24-hour timeline, sponsor activation grid, and conversational co-pilot.
+  - **Client Logic (`public/tourcraft.js`, mirrored in `public/app.js`):** Reactive state manager handling artist selection, city switching, Markdown rider export, and interactive chat.
+  - **Styles (`public/tourcraft.css`, mirrored in `public/style.css`):** Custom CSS design system, responsive typography, tactile obsidian cards, and electric acid chartreuse accents.
 
 ## Key UI Sections
 

@@ -24,7 +24,9 @@ const MIME_TYPES = {
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".jpg": "image/jpeg",
-  ".ico": "image/x-icon"
+  ".ico": "image/x-icon",
+  ".woff2": "font/woff2",
+  ".woff": "font/woff"
 };
 
 function sendJson(res, statusCode, data) {
@@ -142,7 +144,7 @@ export async function handleRequest(req, res) {
 
       if (pathname === "/api/agent/chat" && req.method === "POST") {
         const body = await parseBody(req);
-        const query = body.query || "";
+        const query = body.query || body.message || "";
         const activePackage = body.activePackage || null;
         const answer = await tourAgent.answerAgentQuery(query, activePackage);
         return sendJson(res, 200, answer);
@@ -159,6 +161,8 @@ export async function handleRequest(req, res) {
   let safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, "");
   if (safePath === "/" || safePath === "") {
     safePath = "/index.html";
+  } else if (safePath === "/tourcraft" || safePath === "/tourcraft/") {
+    safePath = "/tourcraft.html";
   }
 
   const filePath = path.join(PUBLIC_DIR, safePath);

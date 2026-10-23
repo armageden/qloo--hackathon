@@ -4,8 +4,13 @@
 - `server.js`
 - `cli.js`
 - `public/index.html`
+- `public/styles.css`
+- `public/script.js`
 - `public/app.js`
 - `public/style.css`
+- `public/tourcraft.html`
+- `public/tourcraft.css`
+- `public/tourcraft.js`
 - `qloo.mcp.json`
 
 ## Purpose
