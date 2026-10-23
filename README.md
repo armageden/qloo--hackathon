@@ -111,8 +111,8 @@ Qloo connects **250M+ entities across music, dining, fashion, nightlife, film, a
 ### 1. Clone & Run Locally
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/tourcraft-qloo-agent.git
-cd tourcraft-qloo-agent
+git clone https://github.com/armageden/qloo--hackathon.git
+cd qloo--hackathon
 
 # Run the test suite
 node test.js

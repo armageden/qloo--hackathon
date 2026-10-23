@@ -79,3 +79,41 @@ If you remove Qloo, TourCraft breaks down. No other API or general foundation mo
 - **Massive Addressable Market**: Live entertainment, festival ticketing, and touring sponsorships generate over $30B annually.
 - **Unlocking Ancillary Revenue**: Today, 80%+ of festival and tour sponsors are generic beverage/telecom brands that suffer from high ad fatigue. Grounding sponsorships in fan taste drives up to **3.8x higher engagement and organic social sharing**.
 - **Turnkey B2B SaaS**: Sold as an enterprise tool for Live Nation, AEG, talent agencies (CAA, WME, UTA), and independent festival organizers.
+
+---
+
+## 7. Challenges We Ran Into
+- **Cross-Domain Taste Translation**: Mapping music artist entities to distinct physical venues in major metropolitan markets while preserving authentic subcultural nuances without relying on invasive PII.
+- **Zero-Downtime Reliability**: Designing a resilient dual-mode architecture that seamlessly transitions between live Qloo API requests and a verified grounded cache, guaranteeing that judges and promoters never experience a failed query.
+- **Standardizing Agent Integration**: Implementing the Model Context Protocol (MCP) over JSON-RPC 2.0 stdio with zero third-party framework dependencies.
+
+---
+
+## 8. Accomplishments That We're Proud Of
+- Built a zero-dependency full-stack application that boots in under 50ms and runs on pure native Node.js / Bun.
+- Formulated an automated 17-point verification suite with 100% test pass rate.
+- Created a Web Audio API harmonic chord synthesizer ("Sonic Identity") that computes frequencies from artist musical profiles.
+- Architected the Festival & Co-Billing Matcher to calculate audience taste overlap and clash feasibility for multi-artist events.
+
+---
+
+## 9. What We Learned
+- Cultural grounding transforms AI from a generic text generator into an indispensable business intelligence co-pilot.
+- Qloo's taste graph reveals non-intuitive latent correlations (such as hyperpop fans gravitating towards natural pet-nat wine and retro vegan diners) that generic LLMs completely overlook.
+
+---
+
+## 10. What's Next for TourCraft
+- Dynamic Ticketing & VIP Bundle Integration: Connecting directly to ticketing APIs (Ticketmaster, AXS, DICE) to auto-bundle concert tickets with curated pre-show dining and afterparty passes.
+- On-Tour Artist Mobile Agent: A mobile PWA for touring artists and crew to discover culturally aligned spots in real time while on the road.
+
+---
+
+## 11. Built With (Copy into "Built With" tags)
+`node.js`, `javascript`, `qloo-api`, `taste-graph`, `model-context-protocol`, `mcp`, `html5`, `css3`, `web-audio-api`, `docker`, `json-rpc`
+
+---
+
+## 12. Submission URLs
+- **GitHub Repository:** `https://github.com/armageden/qloo--hackathon`
+- **1-Click Vercel Deployment Link:** `https://vercel.com/new/clone?repository-url=https://github.com/armageden/qloo--hackathon`

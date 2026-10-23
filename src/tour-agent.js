@@ -16,22 +16,29 @@ export class TourAgent {
 
     // Phase 1: Entity Resolution & Grounding
     const searchRes = await this.qloo.search(artistInput, "music");
-    const entity = searchRes.data[0] || {
+    const entity = (searchRes.data && searchRes.data[0]) ? {
+      id: searchRes.data[0].id || searchRes.data[0].entity_id || "urn:entity:music:chappell_roan",
+      entity_id: searchRes.data[0].entity_id || searchRes.data[0].id,
+      name: searchRes.data[0].name || artistInput,
+      properties: searchRes.data[0].properties || { genres: ["Pop"] }
+    } : {
       id: "urn:entity:music:chappell_roan",
+      entity_id: "urn:entity:music:chappell_roan",
       name: "Chappell Roan",
       properties: { genres: ["Pop"] }
     };
 
     // Find artist details in DB or match by slug
     const artistKey = Object.keys(ARTISTS_DATABASE).find(k => 
-      entity.name.toLowerCase().includes(ARTISTS_DATABASE[k].name.toLowerCase()) ||
-      k.includes(artistInput.toLowerCase())
+      (entity.name && entity.name.toLowerCase().includes(ARTISTS_DATABASE[k].name.toLowerCase())) ||
+      (artistInput && k.includes(artistInput.toLowerCase())) ||
+      (artistInput && artistInput.toLowerCase().includes(k))
     ) || "chappell-roan";
 
     const artistData = ARTISTS_DATABASE[artistKey] || ARTISTS_DATABASE["chappell-roan"];
 
     // Phase 2: Cross-Domain Taste Graph Expansion
-    const recsRes = await this.qloo.getRecommendations(entity.id, "all", cityKey);
+    const recsRes = await this.qloo.getRecommendations(entity.entity_id || entity.id, "all", cityKey);
     const affinities = recsRes.recommendations;
 
     // Phase 3: Local City Matching & Itinerary Synthesis
