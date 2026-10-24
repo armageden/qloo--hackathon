@@ -47,6 +47,10 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Export Rider
         </button>
+        <a href="/" class="btn btn-secondary" id="btnBackToCinematic" title="Experience Mostar City Cinematic Scroll Page" style="text-decoration: none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Mostar Story ↗
+        </a>
       </div>
     </header>
 
@@ -69,13 +73,13 @@
           </p>
 
           <div class="view-mode-tabs">
-            <button class="mode-tab active" id="tabModeTakeover">
+            <button class="mode-tab active" id="tabModeTakeover" type="button">
               <span class="tab-index">01</span> 24-Hour City Takeover
             </button>
-            <button class="mode-tab" id="tabModeCompare">
+            <button class="mode-tab" id="tabModeCompare" type="button">
               <span class="tab-index">02</span> Festival & Co-Billing Matcher
             </button>
-            <button class="mode-tab" id="tabModeInspector">
+            <button class="mode-tab" id="tabModeInspector" type="button">
               <span class="tab-index">03</span> Qloo API Inspector
             </button>
           </div>
@@ -91,31 +95,31 @@
                 <span class="label-hint">SELECT OR SEARCH</span>
               </div>
               <div class="artist-presets" id="artistPresets">
-                <button class="preset-btn active" data-artist="chappell-roan">
+                <button class="preset-btn active" data-artist="chappell-roan" type="button">
                   <span class="preset-dot"></span>Chappell Roan
                 </button>
-                <button class="preset-btn" data-artist="charli-xcx">
+                <button class="preset-btn" data-artist="charli-xcx" type="button">
                   <span class="preset-dot"></span>Charli XCX
                 </button>
-                <button class="preset-btn" data-artist="kendrick-lamar">
+                <button class="preset-btn" data-artist="kendrick-lamar" type="button">
                   <span class="preset-dot"></span>Kendrick Lamar
                 </button>
-                <button class="preset-btn" data-artist="tyler-the-creator">
+                <button class="preset-btn" data-artist="tyler-the-creator" type="button">
                   <span class="preset-dot"></span>Tyler, The Creator
                 </button>
-                <button class="preset-btn" data-artist="bad-bunny">
+                <button class="preset-btn" data-artist="bad-bunny" type="button">
                   <span class="preset-dot"></span>Bad Bunny
                 </button>
-                <button class="preset-btn" data-artist="fred-again">
+                <button class="preset-btn" data-artist="fred-again" type="button">
                   <span class="preset-dot"></span>Fred again..
                 </button>
-                <button class="preset-btn" data-artist="cedric-the-entertainer">
+                <button class="preset-btn" data-artist="cedric-the-entertainer" type="button">
                   <span class="preset-dot"></span>Cedric The Entertainer
                 </button>
-                <button class="preset-btn" data-artist="john-summit">
+                <button class="preset-btn" data-artist="john-summit" type="button">
                   <span class="preset-dot"></span>John Summit
                 </button>
-                <button class="preset-btn" data-artist="billie-eilish">
+                <button class="preset-btn" data-artist="billie-eilish" type="button">
                   <span class="preset-dot"></span>Billie Eilish
                 </button>
               </div>
@@ -132,49 +136,49 @@
                 <span class="label-hint">MAJOR VENUES</span>
               </div>
               <div class="city-selector-grid" id="citySelector">
-                <button class="city-btn active" data-city="chicago">
+                <button class="city-btn active" data-city="chicago" type="button">
                   <span class="city-header-row">
                     <span class="city-name">Chicago, IL</span>
                     <span class="city-code">ORD</span>
                   </span>
                   <span class="city-venue">United Center • 23.5k cap</span>
                 </button>
-                <button class="city-btn" data-city="new-york">
+                <button class="city-btn" data-city="new-york" type="button">
                   <span class="city-header-row">
                     <span class="city-name">New York, NY</span>
                     <span class="city-code">JFK</span>
                   </span>
                   <span class="city-venue">Madison Sq Garden • 20k cap</span>
                 </button>
-                <button class="city-btn" data-city="los-angeles">
+                <button class="city-btn" data-city="los-angeles" type="button">
                   <span class="city-header-row">
                     <span class="city-name">Los Angeles, CA</span>
                     <span class="city-code">LAX</span>
                   </span>
                   <span class="city-venue">Kia Forum • 17.5k cap</span>
                 </button>
-                <button class="city-btn" data-city="london">
+                <button class="city-btn" data-city="london" type="button">
                   <span class="city-header-row">
                     <span class="city-name">London, UK</span>
                     <span class="city-code">LHR</span>
                   </span>
                   <span class="city-venue">The O2 Arena • 20k cap</span>
                 </button>
-                <button class="city-btn" data-city="austin">
+                <button class="city-btn" data-city="austin" type="button">
                   <span class="city-header-row">
                     <span class="city-name">Austin, TX</span>
                     <span class="city-code">AUS</span>
                   </span>
                   <span class="city-venue">Moody Center • 15k cap</span>
                 </button>
-                <button class="city-btn" data-city="tokyo">
+                <button class="city-btn" data-city="tokyo" type="button">
                   <span class="city-header-row">
                     <span class="city-name">Tokyo, JP</span>
                     <span class="city-code">HND</span>
                   </span>
                   <span class="city-venue">Tokyo Dome • 55k cap</span>
                 </button>
-                <button class="city-btn" data-city="berlin">
+                <button class="city-btn" data-city="berlin" type="button">
                   <span class="city-header-row">
                     <span class="city-name">Berlin, DE</span>
                     <span class="city-code">BER</span>
@@ -341,9 +345,9 @@
                 <div class="chat-bubble agent">
                   <p>Welcome! I'm grounded in Qloo's taste graph for <strong id="chatArtistPrompt">Chappell Roan</strong>. Ask me why specific venues were selected, how this audience compares to other headliners, or how to pitch brand sponsors.</p>
                   <div class="chat-quick-prompts">
-                    <button class="quick-chip" onclick="askQuickQuestion('Why did Qloo recommend natural wine and retro diners?')">Why this dining style?</button>
-                    <button class="quick-chip" onclick="askQuickQuestion('What brand sponsorship would fail for this audience?')">Risky brand sponsors?</button>
-                    <button class="quick-chip" onclick="askQuickQuestion('Compare this audience to standard commercial pop.')">Mainstream comparison?</button>
+                    <button class="quick-chip" type="button" onclick="askQuickQuestion('Why did Qloo recommend natural wine and retro diners?')">Why this dining style?</button>
+                    <button class="quick-chip" type="button" onclick="askQuickQuestion('What brand sponsorship would fail for this audience?')">Risky brand sponsors?</button>
+                    <button class="quick-chip" type="button" onclick="askQuickQuestion('Compare this audience to standard commercial pop.')">Mainstream comparison?</button>
                   </div>
                 </div>
               </div>

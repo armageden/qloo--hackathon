@@ -183,6 +183,11 @@ body {
   box-shadow: 0 0 6px rgba(0, 255, 102, 0.6);
 }
 
+.qloo-status-pill.unconfigured .status-dot {
+  background-color: var(--accent-amber);
+  box-shadow: 0 0 6px rgba(255, 184, 0, 0.6);
+}
+
 /* Button System */
 .btn {
   display: inline-flex;

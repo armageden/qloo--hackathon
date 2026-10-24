@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { qlooClient } from "./src/qloo-client.js";
 import { tourAgent } from "./src/tour-agent.js";
 import { ARTISTS_DATABASE, CITIES_DATABASE } from "./src/taste-database.js";
@@ -50,6 +51,28 @@ async function runTestSuite() {
   assert(cmp.overlapScore >= 50, "Audience comparison produces quantified overlap score");
   assert(cmp.feasibilityVerdict.length > 0, "Audience comparison provides feasibility verdict");
   assert(cmp.divergence.artistAExclusive.length > 0, "Audience divergence highlights distinctive aesthetics");
+
+  // Test 7: Fallback Robustness on Unknown Performer & Market
+  const fallbackPkg = await tourAgent.generateTourPackage("brand-new-emerging-indie-artist", "austin");
+  assert(Boolean(fallbackPkg.metadata.artist), "TourAgent handles uncataloged performers gracefully");
+  assert(fallbackPkg.itinerary.length === 6, "Fallback itinerary maintains standard 6-stop takeover schedule");
+
+  // Test 8: Agent Query Resilience Without Active Package
+  const standAloneChat = await tourAgent.answerAgentQuery("how does Qloo calculate audience cross-domain affinity?", null);
+  assert(standAloneChat.answer.length > 50, "Standalone chat produces comprehensive cultural intelligence");
+
+  // Test 9: Public File Integrity
+  const requiredPublicFiles = [
+    "public/index.html",
+    "public/styles.css",
+    "public/script.js",
+    "public/tourcraft.html",
+    "public/app.js",
+    "public/style.css"
+  ];
+  for (const pf of requiredPublicFiles) {
+    assert(fs.existsSync(pf), `Public asset exists on disk: ${pf}`);
+  }
 
   console.log(`\nResults: ${passed} passed, ${failed} failed.`);
   if (failed > 0) process.exit(1);
