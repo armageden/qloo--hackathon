@@ -190,17 +190,17 @@ export async function handleRequest(req, res) {
   // --- Static File Serving ---
   let safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, "");
   if (safePath === "/" || safePath === "" || safePath === "/tourcraft" || safePath === "/tourcraft/") {
-    safePath = "/tourcraft.html";
-  } else if (safePath === "/mostar" || safePath === "/mostar/") {
     safePath = "/index.html";
+  } else if (safePath === "/mostar" || safePath === "/mostar/") {
+    safePath = "/mostar.html";
   }
 
   const filePath = path.join(PUBLIC_DIR, safePath);
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
-      // Fallback to tourcraft.html for client-side navigation
-      const indexPath = path.join(PUBLIC_DIR, "tourcraft.html");
+      // Fallback to index.html for client-side navigation
+      const indexPath = path.join(PUBLIC_DIR, "index.html");
       fs.readFile(indexPath, (readErr, content) => {
         if (readErr) {
           res.writeHead(404, { "Content-Type": "text/plain" });

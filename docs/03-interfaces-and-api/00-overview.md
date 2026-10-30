@@ -6,6 +6,7 @@
 - `public/index.html`
 - `public/styles.css`
 - `public/script.js`
+- `public/mostar.html`
 - `public/tourcraft.html`
 - `public/app.js`
 - `public/style.css`

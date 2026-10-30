@@ -4,8 +4,8 @@
 
 TourCraft ships two vanilla frontend surfaces. Both have been re-themed with the Wandor visual system — Geist UI type, Special Elite wordmarks, warm white surfaces, terracotta (`#905831`) accents, and liquid-glass panels — while preserving all original markup, interactions, and copy.
 
-1. **TourCraft Cultural Console (`/` and `/tourcraft`):** Implemented in `public/tourcraft.html`, `public/app.js`, and `public/style.css`.
-2. **Mostar Cinematic Experience (`/mostar`):** Implemented in `public/index.html`, `public/styles.css`, and `public/script.js`.
+1. **TourCraft Cultural Console (`/` and `/tourcraft`):** Implemented in `public/index.html` (and mirrored in `public/tourcraft.html`), `public/app.js`, and `public/style.css`.
+2. **Mostar Cinematic Experience (`/mostar`):** Implemented in `public/mostar.html`, `public/styles.css`, and `public/script.js`.
 
 No frontend build step is required; `server.js` serves `public/` directly.
 

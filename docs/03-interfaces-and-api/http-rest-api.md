@@ -198,8 +198,8 @@ Configures or overrides the live Gemini AI Co-Pilot API key and model at runtime
   ```
 
 ## Static Routes
-- `/`, `/tourcraft`: Serves `public/tourcraft.html` (the primary TourCraft cultural tour console).
-- `/mostar`: Serves `public/index.html` (the Mostar city showcase page).
+- `/`, `/tourcraft`: Serves `public/index.html` and `public/tourcraft.html` (the primary TourCraft cultural tour console).
+- `/mostar`: Serves `public/mostar.html` (the Mostar city showcase page).
 - Root-relative assets (`/style.css`, `/app.js`, `/styles.css`, `/script.js`) are served directly from `public/`.
 
 ## Related Subjects
