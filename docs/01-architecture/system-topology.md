@@ -29,6 +29,7 @@ TourCraft is structured as a self-contained, zero-dependency full-stack applicat
 - **HTTP Server:** Native `node:http` (zero external npm framework dependencies)
 - **Port:** Configured via `PORT` environment variable (defaults to `3000`)
 - **Package Manifest:** `package.json`
+- **Visual Theme:** The Wandor light editorial system (Geist + Special Elite, terracotta `#905831`, liquid-glass panels) is applied entirely through `public/styles.css` and `public/style.css`; there is no frontend build step.
 
 ## Deployment Targets
 

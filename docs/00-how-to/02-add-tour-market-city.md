@@ -9,8 +9,8 @@ Use this recipe when registering a new metropolitan market (e.g. `"tokyo"`, `"be
 
 1. **Add City Record in `src/taste-database.js`:**
    Add a new key under `CITIES_DATABASE` with venues and cultural neighborhoods containing dining, nightlife, and fashion picks.
-2. **Add City Button in `public/index.html`:**
-   Add a `<button class="city-btn" data-city="tokyo">` button inside `#citySelector`.
+2. **Update the TourCraft selector in `public/tourcraft.html` only when needed:**
+   `public/app.js` hydrates `#citySelector` from `GET /api/cities` and adds missing market buttons. Keep static buttons in sync for the no-backend HTML fallback; do not add console city buttons to the cinematic `public/index.html`.
 3. **Verify via CLI and Tests:**
    Run `test.js` and generate an itinerary for the new market.
 
@@ -47,16 +47,14 @@ export const CITIES_DATABASE = {
 };
 ```
 
-In `public/index.html`:
+For a static fallback entry, add a button to `#citySelector` in `public/tourcraft.html`:
 ```html
-<div class="city-selector-grid" id="citySelector">
-  <!-- Insert new city button -->
-  <button class="city-btn" data-city="tokyo">
-    <span class="city-name">Tokyo, JP</span>
-    <span class="city-venue">Tokyo Dome</span>
-  </button>
-</div>
+<button class="city-btn" data-city="tokyo" type="button">
+  <span class="city-name">Tokyo, JP</span>
+  <span class="city-venue">Tokyo Dome</span>
+</button>
 ```
+The normal console path obtains city buttons from `GET /api/cities` and does not require a duplicated static button.
 
 ## 4. Verification
 

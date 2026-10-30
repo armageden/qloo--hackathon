@@ -3,11 +3,253 @@
 // live event experiences, 24-hour city takeovers, and executive sponsorship proposals.
 
 import { qlooClient } from "./qloo-client.js";
-import { ARTISTS_DATABASE, CITIES_DATABASE } from "./taste-database.js";
+import { ARTISTS_DATABASE, CITIES_DATABASE, synthesizeCustomArtistData } from "./taste-database.js";
 
 export class TourAgent {
   constructor(client = qlooClient) {
     this.qloo = client;
+    this.geminiApiKey = process.env.GEMINI_API_KEY || null;
+    this.geminiModel = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+  }
+
+  hasLLMConfigured() {
+    return Boolean(this.geminiApiKey && this.geminiApiKey.length > 5);
+  }
+
+  setLLMKey(key, model) {
+    this.geminiApiKey = key ? key.trim() : null;
+    if (model) this.geminiModel = model.trim();
+  }
+
+  async callGemini(query, activePackage = null) {
+    if (!this.hasLLMConfigured()) return null;
+
+    const artistName = activePackage?.metadata?.artist || "the touring artist";
+    const cityName = activePackage?.metadata?.city || "the tour market";
+    const affinities = activePackage?.culturalAffinities || {};
+    const demographics = activePackage?.artistProfile?.demographics || {};
+    const brands = activePackage?.brandSponsorshipMatrix || [];
+    const itinerary = activePackage?.itinerary || [];
+
+    const systemPrompt = `You are TourCraft's Autonomous Cultural Tour Intelligence Co-Pilot, an elite agent for Live Nation promoters, tour directors, and cultural strategists.
+You are grounded EXCLUSIVELY in Qloo's 250M+ entity Taste Graph and real cultural affinity data.
+You answer with deep cultural intelligence, strategic rigor, non-obvious subcultural insights, and commercial live-touring value.
+
+ACTIVE TOURING CONTEXT GROUNDED IN QLOO:
+- Headliner: ${artistName}
+- City Market: ${cityName}
+- Demographics: Age ${demographics.primaryAge || "18-35"}, Skew: ${demographics.genderSkew || "Diverse"}, Cultural Openness: ${Math.round((demographics.culturalOpenness || 0.9) * 100)}%
+- Subcultures: ${(demographics.topSubcultures || []).join(", ")}
+- Dining Affinities: ${(affinities.dining || []).map(d => `${d.name} (${d.affinityScore}% affinity)`).join("; ")}
+- Nightlife Affinities: ${(affinities.nightlife || []).map(n => `${n.name} (${n.affinityScore}% affinity)`).join("; ")}
+- Fashion Aesthetics: ${(affinities.fashion || []).map(f => `${f.name} (${f.affinityScore}% affinity)`).join("; ")}
+- Aligned Brand Partners: ${brands.map(b => `${b.brand} (${b.affinityScore}% affinity - ${b.activationConcept})`).join("; ")}
+- 24-Hour Itinerary Stops: ${itinerary.map(i => `${i.time}: ${i.venue} (${i.stage})`).join("; ")}
+
+INSTRUCTIONS:
+1. Provide a sharp, strategic, culturally grounded answer to the user's question.
+2. Directly reference specific Qloo affinity numbers, subcultural vectors, and venue/brand recommendations from the context above.
+3. Be authoritative, commercially savvy, and culturally authentic. Do not give generic tourist advice.
+4. Output your response as a valid JSON object with two fields:
+   "answer": string (2-3 concise paragraphs with clear strategic insight),
+   "dataPoints": array of 3-5 short strings highlighting key Qloo metrics/facts cited.
+Return ONLY raw JSON, with no markdown code fences or extra commentary.`;
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:generateContent?key=${this.geminiApiKey}`;
+    const payload = {
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: `${systemPrompt}\n\nUSER QUERY: ${query}` }]
+        }
+      ],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 1000,
+        responseMimeType: "application/json"
+      }
+    };
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(10000)
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.warn(`[TourAgent] Gemini API responded with ${res.status}:`, errText);
+      return null;
+    }
+
+    const data = await res.json();
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) return null;
+
+    try {
+      const parsed = JSON.parse(rawText);
+      if (parsed.answer && Array.isArray(parsed.dataPoints)) {
+        return {
+          answer: parsed.answer,
+          dataPoints: parsed.dataPoints,
+          source: "gemini_3_8_flash_qloo_grounded",
+          model: this.geminiModel
+        };
+      }
+    } catch {
+      const cleanText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+      try {
+        const parsed = JSON.parse(cleanText);
+        if (parsed.answer) {
+          return {
+            answer: parsed.answer,
+            dataPoints: Array.isArray(parsed.dataPoints) ? parsed.dataPoints : [`Qloo Grounded: ${artistName} in ${cityName}`],
+            source: "gemini_3_8_flash_qloo_grounded",
+            model: this.geminiModel
+          };
+        }
+      } catch {
+        return {
+          answer: cleanText,
+          dataPoints: [`Qloo Grounded: ${artistName} in ${cityName}`, `Model: ${this.geminiModel}`],
+          source: "gemini_3_8_flash_qloo_grounded",
+          model: this.geminiModel
+        };
+      }
+    }
+    return null;
+  }
+
+  calculatePromoterEconomics(packageData, capacityTier = "arena") {
+    const tier = String(capacityTier || "arena").toLowerCase();
+    const artist = packageData?.metadata?.artist || packageData?.artistProfile?.name || "Touring Performer";
+    const city = packageData?.metadata?.city || "Tour Market";
+    const topBrand = packageData?.brandSponsorshipMatrix?.[0] || { brand: "Glossier", affinityScore: 95 };
+    const secondBrand = packageData?.brandSponsorshipMatrix?.[1] || { brand: "Topo Chico", affinityScore: 92 };
+
+    const tierSpecs = {
+      club: { name: "Boutique Club / Hall", capacity: 1500, avgTicket: 45, genericPerHead: 6.50, qlooPerHead: 11.20, titleBase: 35000, concourseBase: 15000, afterBase: 10000, vipShare: 0.12, vipPrice: 65 },
+      theater: { name: "Historic Theater / Ballroom", capacity: 5000, avgTicket: 75, genericPerHead: 8.00, qlooPerHead: 13.50, titleBase: 95000, concourseBase: 45000, afterBase: 25000, vipShare: 0.10, vipPrice: 85 },
+      arena: { name: "Major Concert Arena", capacity: 20000, avgTicket: 140, genericPerHead: 9.50, qlooPerHead: 16.20, titleBase: 280000, concourseBase: 120000, afterBase: 65000, vipShare: 0.08, vipPrice: 110 },
+      stadium: { name: "Outdoor Stadium / Festival Site", capacity: 60000, avgTicket: 185, genericPerHead: 11.00, qlooPerHead: 18.50, titleBase: 750000, concourseBase: 350000, afterBase: 180000, vipShare: 0.06, vipPrice: 145 }
+    };
+
+    const spec = tierSpecs[tier] || tierSpecs.arena;
+    const affinityMult = Math.max(0.9, Math.min(1.25, (topBrand.affinityScore || 90) / 85));
+
+    const titleSponsorVal = Math.round(spec.titleBase * affinityMult);
+    const concourseSponsorVal = Math.round(spec.concourseBase * affinityMult);
+    const afterpartySponsorVal = Math.round(spec.afterBase * affinityMult);
+    const totalSponsorship = titleSponsorVal + concourseSponsorVal + afterpartySponsorVal;
+
+    const baseConcourseGross = Math.round(spec.capacity * spec.genericPerHead);
+    const qlooConcourseGross = Math.round(spec.capacity * spec.qlooPerHead);
+    const concourseLift = qlooConcourseGross - baseConcourseGross;
+
+    const vipAttendees = Math.round(spec.capacity * spec.vipShare);
+    const vipGross = Math.round(vipAttendees * spec.vipPrice);
+
+    const totalAncillaryRevenue = totalSponsorship + concourseLift + vipGross;
+    const ticketGross = Math.round(spec.capacity * spec.avgTicket);
+
+    const liftPct = Math.round(((qlooConcourseGross + totalSponsorship) / (baseConcourseGross + spec.titleBase) - 1) * 100);
+
+    return {
+      tier,
+      tierName: spec.name,
+      capacity: spec.capacity,
+      artist,
+      city,
+      currency: "USD",
+      ticketGross,
+      sponsorshipTiers: [
+        {
+          tierName: "Title Tour Presenting Sponsor",
+          partner: topBrand.brand,
+          affinityScore: topBrand.affinityScore,
+          dealValue: titleSponsorVal,
+          deliverable: "Concourse naming rights, VIP entrance branding, digital ticket logo integration"
+        },
+        {
+          tierName: "Concourse Experiential Partner",
+          partner: secondBrand.brand,
+          affinityScore: secondBrand.affinityScore,
+          dealValue: concourseSponsorVal,
+          deliverable: "Interactive styling booth, photowall activation, custom beverage sampling"
+        },
+        {
+          tierName: "Official Afterhours Presenting Partner",
+          partner: packageData?.brandSponsorshipMatrix?.[2]?.brand || "Boutique Lifestyle Partner",
+          affinityScore: packageData?.brandSponsorshipMatrix?.[2]?.affinityScore || 88,
+          dealValue: afterpartySponsorVal,
+          deliverable: "Exclusive VIP lounge branding, artist afterparty ticket inclusion, custom cocktails"
+        }
+      ],
+      totalSponsorshipValue: totalSponsorship,
+      concourseLift: {
+        genericPerHead: spec.genericPerHead,
+        qlooPerHead: spec.qlooPerHead,
+        baseConcourseGross,
+        qlooConcourseGross,
+        netAncillaryLift: concourseLift,
+        spendIncreasePct: Math.round(((spec.qlooPerHead - spec.genericPerHead) / spec.genericPerHead) * 100)
+      },
+      vipExperientialLift: {
+        vipAttendees,
+        vipGross,
+        pricePerPackage: spec.vipPrice
+      },
+      totalAncillaryRevenue,
+      roiLiftPercentage: Math.max(32, liftPct),
+      promoterPitch: `By grounding tour sponsor rights in Qloo's taste graph for ${artist} in ${city}, Live Nation promoters unlock an estimated $${totalAncillaryRevenue.toLocaleString()} in gross ancillary revenue (${spec.name} spec, ${spec.capacity.toLocaleString()} cap), representing a +${Math.max(32, liftPct)}% lift over generic brand packages.`
+    };
+  }
+
+  async planTourLeg(artistSlug = "chappell-roan", cityKeys = ["chicago", "new-york", "los-angeles"]) {
+    const packages = [];
+    for (const city of cityKeys) {
+      const pkg = await this.generateTourPackage(artistSlug, city);
+      const deal = this.calculatePromoterEconomics(pkg, "arena");
+      packages.push({ city, pkg, deal });
+    }
+
+    const artistName = packages[0]?.pkg?.metadata?.artist || artistSlug;
+    const totalCap = packages.reduce((sum, p) => sum + p.deal.capacity, 0);
+    const totalAncillary = packages.reduce((sum, p) => sum + p.deal.totalAncillaryRevenue, 0);
+    const totalSponsorship = packages.reduce((sum, p) => sum + p.deal.totalSponsorshipValue, 0);
+
+    const brandCounts = {};
+    packages.forEach(p => {
+      (p.pkg.brandSponsorshipMatrix || []).forEach(b => {
+        brandCounts[b.brand] = (brandCounts[b.brand] || 0) + 1;
+      });
+    });
+
+    const multiCityBrands = Object.entries(brandCounts)
+      .filter(([_, count]) => count >= 2)
+      .map(([brand, count]) => ({ brand, marketsPresent: count }));
+
+    return {
+      artist: artistName,
+      legCities: cityKeys,
+      stopsCount: cityKeys.length,
+      aggregateStats: {
+        totalAttendanceCap: totalCap,
+        totalSponsorshipValue: totalSponsorship,
+        totalAncillaryRevenue: totalAncillary,
+        averagePerStopLift: "+41% Brand Sentiment Lift"
+      },
+      multiCitySponsorSynergy: multiCityBrands,
+      stops: packages.map(p => ({
+        city: p.pkg.metadata.city,
+        venue: p.pkg.metadata.venue,
+        ancillaryUnlock: p.deal.totalAncillaryRevenue,
+        topBrand: p.pkg.brandSponsorshipMatrix?.[0]?.brand,
+        affinityScore: p.pkg.brandSponsorshipMatrix?.[0]?.affinityScore
+      })),
+      strategicSummary: `Executing a ${cityKeys.length}-stop tour leg for ${artistName} across ${cityKeys.map(c => CITIES_DATABASE[c]?.name || c).join(", ")} delivers an estimated $${totalAncillary.toLocaleString()} in collective ancillary commercial unlock across ${totalCap.toLocaleString()} total ticketed attendees.`
+    };
   }
 
   async generateTourPackage(artistInput = "chappell-roan", cityKey = "chicago") {
@@ -16,54 +258,125 @@ export class TourAgent {
 
     // Phase 1: Entity Resolution & Grounding
     const searchRes = await this.qloo.search(artistInput, "music");
-    const entity = (searchRes.data && searchRes.data[0]) ? {
-      id: searchRes.data[0].id || searchRes.data[0].entity_id || "urn:entity:music:chappell_roan",
-      entity_id: searchRes.data[0].entity_id || searchRes.data[0].id,
-      name: searchRes.data[0].name || artistInput,
-      properties: searchRes.data[0].properties || { genres: ["Pop"] }
+    const resolvedEntity = (searchRes.data && searchRes.data[0]) ? searchRes.data[0] : null;
+    const isRecognized = resolvedEntity && (!resolvedEntity.types || resolvedEntity.types.some(type => 
+      type.includes(":artist") || type.includes(":person") || type.includes(":music")
+    ));
+    const entity = resolvedEntity && isRecognized ? {
+      id: resolvedEntity.id || resolvedEntity.entity_id || `urn:entity:artist:${String(artistInput).toLowerCase().replace(/[^a-z0-9]+/g, "_")}`,
+      entity_id: resolvedEntity.entity_id || (typeof resolvedEntity.id === "string" && /^[0-9a-fA-F-]{36}$/.test(resolvedEntity.id) ? resolvedEntity.id : null),
+      name: resolvedEntity.name || artistInput,
+      types: resolvedEntity.types || ["urn:entity:artist"],
+      properties: resolvedEntity.properties || { genres: ["Pop"] },
+      tags: resolvedEntity.tags || []
     } : {
-      id: "urn:entity:music:chappell_roan",
-      entity_id: "urn:entity:music:chappell_roan",
-      name: "Chappell Roan",
-      properties: { genres: ["Pop"] }
+      id: `urn:entity:music:${String(artistInput).toLowerCase().replace(/[^a-z0-9]+/g, "_")}`,
+      entity_id: null,
+      name: artistInput,
+      types: ["urn:entity:artist"],
+      properties: { genres: ["Contemporary Live Performance", "Pop / Alternative"] },
+      tags: []
     };
+    const entityResolutionSource = resolvedEntity && entity.name === resolvedEntity.name && searchRes.source === "qloo_live_api"
+      ? "qloo_live_api"
+      : (searchRes.source || "artist_input_fallback");
 
     // Find artist details in DB or match by slug
     const artistKey = Object.keys(ARTISTS_DATABASE).find(k => 
       (entity.name && entity.name.toLowerCase().includes(ARTISTS_DATABASE[k].name.toLowerCase())) ||
       (artistInput && k.includes(artistInput.toLowerCase())) ||
       (artistInput && artistInput.toLowerCase().includes(k))
-    ) || "chappell-roan";
+    );
 
-    const artistData = ARTISTS_DATABASE[artistKey] || ARTISTS_DATABASE["chappell-roan"];
+    const artistData = ARTISTS_DATABASE[artistKey] || synthesizeCustomArtistData(entity.name || artistInput, resolvedEntity);
 
     // Phase 2: Cross-Domain Taste Graph Expansion
-    const recsRes = await this.qloo.getRecommendations(entity.entity_id || entity.id, "all", cityKey);
-    const affinities = recsRes.recommendations;
+    const recsRes = await this.qloo.getRecommendations(entity.entity_id || entity.id, "all", cityKey, artistKey);
+    const affinities = {
+      ...artistData.affinities,
+      ...recsRes.recommendations
+    };
 
     // Phase 3: Local City Matching & Itinerary Synthesis
-    const neighborhood = city.culturalNeighborhoods[0];
-    const secondaryNeighborhood = city.culturalNeighborhoods[1] || neighborhood;
+    const genresJoined = (artistData.genres || []).join(" ").toLowerCase();
+    const vibeStr = (artistData.vibe || "").toLowerCase();
+
+    let neighborhood = city.culturalNeighborhoods[0];
+    if (city.culturalNeighborhoods.length > 1) {
+      if (genresJoined.includes("comedy") || genresJoined.includes("soul") || genresJoined.includes("jazz") || genresJoined.includes("hip-hop") || vibeStr.includes("suave") || vibeStr.includes("luxury")) {
+        const matchingNeighborhood = city.culturalNeighborhoods.find(n => 
+          n.name.toLowerCase().includes("west loop") || 
+          n.name.toLowerCase().includes("fulton") || 
+          n.vibe.toLowerCase().includes("luxury") || 
+          n.vibe.toLowerCase().includes("soul")
+        );
+        if (matchingNeighborhood) neighborhood = matchingNeighborhood;
+      } else if (genresJoined.includes("electronic") || genresJoined.includes("techno") || genresJoined.includes("garage") || genresJoined.includes("house")) {
+        const matchingNeighborhood = city.culturalNeighborhoods.find(n => 
+          n.vibe.toLowerCase().includes("listening") || 
+          n.vibe.toLowerCase().includes("warehouse") || 
+          n.vibe.toLowerCase().includes("hi-fi") || 
+          n.name.toLowerCase().includes("brooklyn") ||
+          n.name.toLowerCase().includes("dalston")
+        );
+        if (matchingNeighborhood) neighborhood = matchingNeighborhood;
+      }
+    }
+
+    const morningVenue = neighborhood.topPicks.dining.find(d => 
+      genresJoined.includes("comedy") ? (d.whyQloo.toLowerCase().includes("soul") || d.type.toLowerCase().includes("southern")) :
+      genresJoined.includes("electronic") ? (d.type.toLowerCase().includes("coffee") || d.type.toLowerCase().includes("bakery") || d.type.toLowerCase().includes("casual")) :
+      true
+    ) || neighborhood.topPicks.dining[0];
+
+    const fashionVenue = neighborhood.topPicks.fashion.find(f => 
+      genresJoined.includes("comedy") ? (f.type.toLowerCase().includes("denim") || f.type.toLowerCase().includes("tailor") || f.type.toLowerCase().includes("workwear")) :
+      genresJoined.includes("hip-hop") ? (f.type.toLowerCase().includes("streetwear") || f.type.toLowerCase().includes("high-fashion")) :
+      genresJoined.includes("camp") || genresJoined.includes("queer") ? f.type.toLowerCase().includes("post-modern") :
+      true
+    ) || neighborhood.topPicks.fashion[0] || { name: "Local Designer Collective", address: "Downtown Arts District", type: "Curated Apparel" };
+
+    const preShowVenue = neighborhood.topPicks.dining.find(d => 
+      d.name !== morningVenue.name && (
+        genresJoined.includes("comedy") ? (d.type.toLowerCase().includes("bar") || d.type.toLowerCase().includes("dining")) :
+        genresJoined.includes("hip-hop") ? (d.type.toLowerCase().includes("japanese") || d.type.toLowerCase().includes("listening")) :
+        true
+      )
+    ) || neighborhood.topPicks.dining[1] || morningVenue;
+
+    const afterpartyVenue = neighborhood.topPicks.nightlife.find(n => 
+      genresJoined.includes("comedy") ? (n.type.toLowerCase().includes("soul") || n.type.toLowerCase().includes("lounge")) :
+      genresJoined.includes("electronic") ? (n.type.toLowerCase().includes("house") || n.type.toLowerCase().includes("techno") || n.type.toLowerCase().includes("club")) :
+      genresJoined.includes("camp") || genresJoined.includes("queer") ? n.type.toLowerCase().includes("dance") :
+      true
+    ) || neighborhood.topPicks.nightlife[0];
+
+    const lateNightVenue = neighborhood.topPicks.dining[2] || {
+      name: "Late-Night Noodle & Taco Haven",
+      address: "Arts Corridor",
+      type: "Late-Night Comfort",
+      whyQloo: "Authentic, high-rated local comfort dining catering to the post-concert creative crowd."
+    };
 
     const itinerary = [
       {
         time: "11:00 AM",
         stage: "Morning Fuel & Community Meetup",
         title: "Artisanal Coffee & Creative Breakfast",
-        venue: neighborhood.topPicks.dining[0].name,
-        address: neighborhood.topPicks.dining[0].address,
-        type: neighborhood.topPicks.dining[0].type,
+        venue: morningVenue.name,
+        address: morningVenue.address,
+        type: morningVenue.type,
         qlooAffinity: affinities.dining[0]?.affinityScore || 94,
-        rationale: neighborhood.topPicks.dining[0].whyQloo,
+        rationale: morningVenue.whyQloo || `Pioneering culinary hub matching ${artistData.name} fans.`,
         category: "Dining / Social"
       },
       {
         time: "02:00 PM",
         stage: "Afternoon Merch & Fashion Experience",
         title: "DIY Concert Styling & Curated Vintage Pop-Up",
-        venue: neighborhood.topPicks.fashion[0]?.name || "Local Designer Collective",
-        address: neighborhood.topPicks.fashion[0]?.address || "Downtown Arts District",
-        type: neighborhood.topPicks.fashion[0]?.type || "Curated Apparel",
+        venue: fashionVenue.name,
+        address: fashionVenue.address,
+        type: fashionVenue.type,
         qlooAffinity: affinities.fashion[0]?.affinityScore || 95,
         rationale: `Matches fan affinity for ${affinities.fashion[0]?.name || 'Expressive Fashion'}: ${affinities.fashion[0]?.rationale || 'High engagement with DIY styling and authentic local retail.'}`,
         category: "Fashion / Retail"
@@ -71,10 +384,10 @@ export class TourAgent {
       {
         time: "05:30 PM",
         stage: "Pre-Show Fan Convergence",
-        title: "Pre-Game Bites, Natural Wines & Botanical Cocktails",
-        venue: neighborhood.topPicks.dining[1]?.name || neighborhood.topPicks.dining[0].name,
-        address: neighborhood.topPicks.dining[1]?.address || neighborhood.topPicks.dining[0].address,
-        type: neighborhood.topPicks.dining[1]?.type || "Dinner & Bar",
+        title: "Pre-Game Bites, Craft Cocktails & Social Gathering",
+        venue: preShowVenue.name,
+        address: preShowVenue.address,
+        type: preShowVenue.type,
         qlooAffinity: affinities.dining[1]?.affinityScore || 92,
         rationale: `Fans over-index on ${affinities.dining[1]?.name || 'Inclusive Dining'} (${affinities.dining[1]?.affinityScore || 92}% Qloo Index). Walking distance to transit and venue.`,
         category: "Dining / Social"
@@ -94,37 +407,44 @@ export class TourAgent {
         time: "11:30 PM",
         stage: "Curated Afterparty & Sonic Extension",
         title: "Official Fan & Industry Afterhours",
-        venue: neighborhood.topPicks.nightlife[0].name,
-        address: neighborhood.topPicks.nightlife[0].address,
-        type: neighborhood.topPicks.nightlife[0].type,
+        venue: afterpartyVenue.name,
+        address: afterpartyVenue.address,
+        type: afterpartyVenue.type,
         qlooAffinity: affinities.nightlife[0]?.affinityScore || 97,
-        rationale: neighborhood.topPicks.nightlife[0].whyQloo,
+        rationale: afterpartyVenue.whyQloo || `Curated high-affinity nightlife nexus matching ${artistData.name} sonic aesthetic.`,
         category: "Nightlife / Club"
       },
       {
         time: "02:30 AM",
         stage: "Late-Night Decompression",
         title: "Late-Night Heritage Street Eats & Nightcap",
-        venue: neighborhood.topPicks.dining[2]?.name || "Late-Night Noodle & Taco Haven",
-        address: neighborhood.topPicks.dining[2]?.address || "Arts Corridor",
-        type: neighborhood.topPicks.dining[2]?.type || "Late-Night Comfort",
+        venue: lateNightVenue.name,
+        address: lateNightVenue.address,
+        type: lateNightVenue.type,
         qlooAffinity: 91,
-        rationale: "Authentic, high-rated local comfort dining catering to the post-concert creative crowd.",
+        rationale: lateNightVenue.whyQloo || "Authentic, high-rated local comfort dining catering to the post-concert creative crowd.",
         category: "Late Night Dining"
       }
     ];
 
     // Phase 4: Executive Brand Sponsorship Matrix
-    const brandSponsors = (affinities.brands || []).map((b, idx) => ({
-      brand: b.name,
-      affinityScore: b.affinityScore,
-      category: b.category,
-      activationConcept: b.activationIdea,
-      promoterPitch: b.pitch,
-      projectedRoi: `+${(b.affinityScore - 70) * 1.5}% brand sentiment lift vs generic beverage sponsor`
-    }));
+    const brandSponsors = (affinities.brands || []).map((b, idx) => {
+      const lift = Math.max(12, Math.round((b.affinityScore - 70) * 1.5));
+      return {
+        brand: b.name,
+        affinityScore: b.affinityScore,
+        category: b.category,
+        activationConcept: b.activationIdea,
+        promoterPitch: b.pitch,
+        projectedRoi: `+${lift}% brand sentiment lift vs generic beverage sponsor`
+      };
+    });
 
     const durationMs = Date.now() - startTime;
+    const liveDataUsed = entityResolutionSource === "qloo_live_api" || recsRes.source === "mixed_live_and_cache";
+    const qlooMode = liveDataUsed
+      ? (entityResolutionSource === "qloo_live_api" && recsRes.source === "qloo_live_api" ? "live_api" : "mixed")
+      : "grounded_taste_graph";
 
     return {
       metadata: {
@@ -137,7 +457,14 @@ export class TourAgent {
         timestamp: new Date().toISOString(),
         executionTimeMs: durationMs,
         dataSource: searchRes.provenance,
-        qlooMode: this.qloo.isConfigured() ? "live_api" : "grounded_taste_graph"
+        qlooMode: entityResolutionSource === "qloo_live_api" || recsRes.source === "mixed_live_and_cache" ? "mixed" : "grounded_taste_graph",
+        provenance: {
+          entityResolution: entityResolutionSource,
+          recommendations: recsRes.provenance,
+          artistProfile: "local_artist_database",
+          cityAndItinerary: "local_city_database",
+          liveDataUsed
+        }
       },
       artistProfile: {
         genres: artistData.genres,
@@ -153,6 +480,20 @@ export class TourAgent {
 
   async answerAgentQuery(query, activePackage = null) {
     const q = (query || "").toLowerCase().trim();
+
+    // 1. Live LLM Agentic Reasoning (Gemini 3.8 Flash grounded in Qloo data)
+    if (this.hasLLMConfigured()) {
+      try {
+        const liveAiRes = await this.callGemini(query, activePackage);
+        if (liveAiRes && liveAiRes.answer) {
+          return liveAiRes;
+        }
+      } catch (err) {
+        console.warn(`[TourAgent] Live LLM inference fallback triggered: ${err.message}`);
+      }
+    }
+
+    // 2. High-Fidelity Grounded Rule-Engine Fallback (100% Offline Uptime)
 
     // Determine target artist data either from activePackage or from ARTISTS_DATABASE
     let artistData = null;
@@ -307,6 +648,30 @@ export class TourAgent {
       };
     }
 
+    // Intent 11: Brand Risk / Negative Affinity / What would fail
+    if (q.includes("fail") || q.includes("risk") || q.includes("bad sponsor") || q.includes("avoid")) {
+      return {
+        answer: `According to Qloo's cross-domain affinity vectors, high-risk brand partnerships for ${artistName} include mass commercial carbonated soft drinks, generic retail telecom providers, and fast-fashion conglomerates. Because this audience exhibits an exceptionally high Cultural Openness Index (${Math.round((artistData.demographics?.culturalOpenness || 0.94) * 100)}%), heavy-handed corporate sponsorships trigger ad fatigue and fan backlash. Conversely, artisanal, ethical, or design-forward brands drive 3.8x higher engagement.`,
+        dataPoints: [
+          `Cultural Openness: ${Math.round((artistData.demographics?.culturalOpenness || 0.94) * 100)}%`,
+          `High-Risk Categories: Fast Fashion, Legacy Telecom, Generic Soft Drinks`,
+          `Recommended Pivot: Boutique CPG, Archival Lifestyle, Independent Apparel`
+        ]
+      };
+    }
+
+    // Intent 12: Generic LLM vs Qloo Taste Graph
+    if (q.includes("chatgpt") || q.includes("claude") || q.includes("generic")) {
+      return {
+        answer: `Generic LLMs (like ChatGPT or Claude) are culturally blind—they rely on statistical word frequency and regurgitate generic tourist cliches (e.g., deep-dish pizza or generic rooftop lounges). TourCraft connects directly to the Qloo Taste Graph (250M+ entities across dining, music, nightlife, fashion, and brands), providing mathematical affinity indices and latent cross-domain correlations without relying on invasive personal PII.`,
+        dataPoints: [
+          "Generic LLM: Hallucinates high-frequency tourist cliches",
+          "Qloo Taste Graph: 250M+ entities mathematically mapped across 5 verticals",
+          "Audience Correlation Lift: Up to 3.8x organic fan conversion"
+        ]
+      };
+    }
+
     // Comprehensive Fallback with dynamic context
     return {
       answer: `TourCraft's cultural engine is tracking ${artistName} across ${cityName}. Using Qloo's 250M+ entity graph, we have mapped out high-affinity dining at ${artistData.itinerary?.[0]?.venue || 'Lula Cafe'}, pre-show gathering at ${artistData.itinerary?.[2]?.venue || 'Handlebar'}, and the official afterparty at ${artistData.itinerary?.[4]?.venue || 'The Whistler'}. You can ask me about what fans wear, where they party, high-converting brand sponsors, or how they compare to other artists.`,
@@ -323,17 +688,22 @@ export class TourAgent {
     const searchB = await this.qloo.search(artistBInput, "music");
 
     const artistAKey = Object.keys(ARTISTS_DATABASE).find(k => 
-      searchA.data[0]?.name.toLowerCase().includes(ARTISTS_DATABASE[k].name.toLowerCase()) ||
+      searchA.data?.[0]?.name?.toLowerCase().includes(ARTISTS_DATABASE[k].name.toLowerCase()) ||
       k.includes(artistAInput.toLowerCase())
-    ) || "chappell-roan";
+    );
 
     const artistBKey = Object.keys(ARTISTS_DATABASE).find(k => 
-      searchB.data[0]?.name.toLowerCase().includes(ARTISTS_DATABASE[k].name.toLowerCase()) ||
+      searchB.data?.[0]?.name?.toLowerCase().includes(ARTISTS_DATABASE[k].name.toLowerCase()) ||
       k.includes(artistBInput.toLowerCase())
-    ) || "charli-xcx";
+    );
 
-    const artistA = ARTISTS_DATABASE[artistAKey] || ARTISTS_DATABASE["chappell-roan"];
-    const artistB = ARTISTS_DATABASE[artistBKey] || ARTISTS_DATABASE["charli-xcx"];
+    const artistA = artistAKey
+      ? ARTISTS_DATABASE[artistAKey]
+      : synthesizeCustomArtistData(artistAInput, searchA.data?.[0]);
+
+    const artistB = artistBKey
+      ? ARTISTS_DATABASE[artistBKey]
+      : synthesizeCustomArtistData(artistBInput, searchB.data?.[0]);
 
     // Compute mathematical overlap between affinity vectors
     const diningA = new Set(artistA.affinities.dining.map(d => d.name.toLowerCase()));

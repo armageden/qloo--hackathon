@@ -83,8 +83,10 @@ export async function handleRequest(req, res) {
         return sendJson(res, 200, {
           app: "TourCraft",
           hasApiKey: qlooClient.isConfigured(),
+          hasGeminiKey: tourAgent.hasLLMConfigured(),
+          geminiModel: tourAgent.geminiModel,
           qlooBaseUrl: qlooClient.baseUrl,
-          mode: qlooClient.isConfigured() ? "live_api" : "grounded_taste_graph",
+          mode: (qlooClient.isConfigured() && verify.ready) ? "live_api" : "grounded_taste_graph",
           status: verify.status || (qlooClient.isConfigured() ? "ready" : "unconfigured"),
           artistsCount: Object.keys(ARTISTS_DATABASE).length,
           citiesCount: Object.keys(CITIES_DATABASE).length
@@ -93,7 +95,7 @@ export async function handleRequest(req, res) {
 
       if (pathname === "/api/config/key" && req.method === "POST") {
         const body = await parseBody(req);
-        if (body.apiKey) {
+        if (body.apiKey !== undefined) {
           qlooClient.setApiKey(body.apiKey);
         }
         const verify = await qlooClient.verifyCredentials();
@@ -101,6 +103,18 @@ export async function handleRequest(req, res) {
           success: true,
           configured: qlooClient.isConfigured(),
           verification: verify
+        });
+      }
+
+      if (pathname === "/api/config/llm" && req.method === "POST") {
+        const body = await parseBody(req);
+        if (body.apiKey !== undefined) {
+          tourAgent.setLLMKey(body.apiKey, body.model);
+        }
+        return sendJson(res, 200, {
+          success: true,
+          hasGeminiKey: tourAgent.hasLLMConfigured(),
+          model: tourAgent.geminiModel
         });
       }
 
@@ -150,6 +164,22 @@ export async function handleRequest(req, res) {
         return sendJson(res, 200, answer);
       }
 
+      if (pathname === "/api/deal/calculate" && req.method === "POST") {
+        const body = await parseBody(req);
+        const activePackage = body.package || null;
+        const capacityTier = body.capacityTier || "arena";
+        const deal = tourAgent.calculatePromoterEconomics(activePackage, capacityTier);
+        return sendJson(res, 200, deal);
+      }
+
+      if (pathname === "/api/tour/route" && req.method === "POST") {
+        const body = await parseBody(req);
+        const artist = body.artist || "chappell-roan";
+        const cities = Array.isArray(body.cities) ? body.cities : ["chicago", "new-york", "los-angeles"];
+        const tourLeg = await tourAgent.planTourLeg(artist, cities);
+        return sendJson(res, 200, tourLeg);
+      }
+
       return sendJson(res, 404, { error: "API route not found" });
     } catch (apiErr) {
       console.error("[API Error]", apiErr);
@@ -159,18 +189,18 @@ export async function handleRequest(req, res) {
 
   // --- Static File Serving ---
   let safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, "");
-  if (safePath === "/" || safePath === "") {
-    safePath = "/index.html";
-  } else if (safePath === "/tourcraft" || safePath === "/tourcraft/") {
+  if (safePath === "/" || safePath === "" || safePath === "/tourcraft" || safePath === "/tourcraft/") {
     safePath = "/tourcraft.html";
+  } else if (safePath === "/mostar" || safePath === "/mostar/") {
+    safePath = "/index.html";
   }
 
   const filePath = path.join(PUBLIC_DIR, safePath);
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
-      // Fallback to index.html for client-side navigation
-      const indexPath = path.join(PUBLIC_DIR, "index.html");
+      // Fallback to tourcraft.html for client-side navigation
+      const indexPath = path.join(PUBLIC_DIR, "tourcraft.html");
       fs.readFile(indexPath, (readErr, content) => {
         if (readErr) {
           res.writeHead(404, { "Content-Type": "text/plain" });

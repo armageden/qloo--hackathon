@@ -7,9 +7,9 @@ During hackathon evaluation, judges may test submissions without an active `QLOO
 
 ## Decision
 We implemented a dual-mode strategy in `src/qloo-client.js`:
-1. **Live Mode:** When `QLOO_API_KEY` is present or set via the UI, requests route to `https://hackathon.api.qloo.com`.
-2. **Grounded Cache Mode:** When unconfigured or offline, requests automatically fall back to verified cultural graph records stored in `src/taste-database.js`.
-Every response explicitly reports its source (`qloo_live_api` vs `qloo_verified_cache`) and provenance string.
+1. **Live Requests:** When `QLOO_API_KEY` is present or set via the UI, eligible requests are attempted against `https://hackathon.api.qloo.com`.
+2. **Grounded Cache Mode:** When unconfigured, offline, or without usable live results, requests fall back to verified cultural graph records stored in `src/taste-database.js`.
+Client results report source and provenance. Tour packages aggregate actual entity-resolution and recommendation sources in `metadata.provenance`; partial live results are marked as mixed rather than describing cached domains as live.
 
 ## Consequences
 - **Positive:** 100% demo uptime, instantaneous response times during review, test suite runs without network flakiness, fully compliant with Qloo data handling rules.

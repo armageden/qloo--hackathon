@@ -9,11 +9,11 @@ Provides verified cultural taste graph data across top touring headliners, genre
 ## Exported Constants
 
 ```js
-import { ARTISTS_DATABASE, CITIES_DATABASE } from "./src/taste-database.js";
+import { ARTISTS_DATABASE, CITIES_DATABASE, synthesizeCustomArtistData } from "./src/taste-database.js";
 ```
 
 ### `ARTISTS_DATABASE`
-Dictionary of pre-grounded artist profiles keyed by slug:
+Dictionary of pre-grounded artist profiles keyed by slug (each record includes verified Qloo `entity_id` UUIDs):
 - `chappell-roan`: Midwest Pop, Synthpop, Queer Glam
 - `charli-xcx`: Hyperpop, Electropop, Club Pop, Brat Pop
 - `kendrick-lamar`: Conscious Hip-Hop, West Coast Rap, Jazz Rap
@@ -28,6 +28,7 @@ Dictionary of pre-grounded artist profiles keyed by slug:
 ```ts
 interface ArtistRecord {
   id: string; // e.g., "urn:entity:music:chappell_roan"
+  entity_id?: string; // Verified Qloo API UUID, e.g., "1C8D8828-5739-4304-9506-BA01B3D63516"
   name: string;
   slug: string;
   genres: string[];
@@ -48,6 +49,9 @@ interface ArtistRecord {
 }
 ```
 
+### `synthesizeCustomArtistData(artistName, resolvedEntity)`
+Dynamically generates cultural profiles and authentic affinities for uncataloged performers (e.g. Rock, Hip-Hop, Electronic, Country, or Stand-up Comedy) based on Qloo tags and genre signals rather than static fallbacks.
+
 ### `CITIES_DATABASE`
 Dictionary of metropolitan tour markets keyed by slug:
 - `chicago`: United Center, Wintrust Arena, The Salt Shed
@@ -57,6 +61,7 @@ Dictionary of metropolitan tour markets keyed by slug:
 - `austin`: Moody Center, ACL Live at the Moody Theater
 - `tokyo`: Tokyo Dome, Nippon Budokan, Ariake Arena
 - `berlin`: Uber Arena, Tempodrom, Velodrom
+- `mostar`: Old Bridge Amphitheatre, Kantarevac Open Air Arena, Pavarotti Music Centre
 
 #### City Record Schema
 ```ts

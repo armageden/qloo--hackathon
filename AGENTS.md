@@ -11,6 +11,7 @@
 - **Package Manager & Build System:** npm (zero external runtime dependencies required).
 - **Primary Archetype:** Full-Stack Web Application + Autonomous Agent CLI Engine.
 - **Environment Setup:** Copy `.env.example` to `.env` or set `QLOO_API_KEY` (optional for local grounded cache).
+- **Visual Theme:** Wandor light editorial system — Geist + Special Elite, terracotta `#905831`, liquid-glass panels — applied to both existing frontend pages without changing their behavior.
 
 ### Verification & Execution Commands
 - **Run Web Server:** `npm start` or `npm run dev` (`node server.js`, defaults to port `3000`).
@@ -31,7 +32,7 @@
 | [`docs/01-architecture/`](docs/01-architecture/00-overview.md) | `server.js`, `Dockerfile`, `vercel.json` | Understanding high-level system topology, deployment targets, or pipeline design. |
 | [`docs/02-core-engine/`](docs/02-core-engine/00-overview.md) | `src/tour-agent.js`, `src/qloo-client.js`, `src/taste-database.js` | Modifying the recommendation engine, Qloo API adapter, or taste graph data. |
 | [`docs/03-interfaces-and-api/`](docs/03-interfaces-and-api/00-overview.md) | `server.js`, `cli.js`, `public/`, `qloo.mcp.json` | Adding/modifying REST API endpoints, CLI subcommands, or frontend UI components. |
-| [`docs/99-design-decisions/`](docs/99-design-decisions/00-overview.md) | `server.js`, `src/qloo-client.js`, `AGENTS.md` | Understanding architectural trade-offs, zero-dependency server choice, or ADRs. |
+| [`docs/99-design-decisions/`](docs/99-design-decisions/00-overview.md) | `server.js`, `src/qloo-client.js`, `AGENTS.md` | Understanding architectural trade-offs, the Wandor visual re-theme, zero-dependency server choice, or ADRs. |
 
 ---
 

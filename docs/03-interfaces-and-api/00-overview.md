@@ -17,4 +17,4 @@ Read this when working with external communication layers, adding or modifying R
 ## Table of Contents
 - [http-rest-api.md](./http-rest-api.md) - Specification of all REST API endpoints served by `server.js`.
 - [cli-workflow.md](./cli-workflow.md) - Command-line interface usage, commands, and MCP configuration.
-- [frontend-ui.md](./frontend-ui.md) - Browser user interface architecture, glassmorphism design system, telemetry indicators, and modals.
+- [frontend-ui.md](./frontend-ui.md) - Browser user interface architecture, the Wandor visual re-theme, telemetry indicators, and modals.

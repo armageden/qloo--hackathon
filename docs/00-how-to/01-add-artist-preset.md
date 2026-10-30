@@ -9,7 +9,7 @@ Use this recipe when adding a new pre-grounded touring artist or comedian into T
 
 1. **Add the Artist Record to `src/taste-database.js`:**
    Add a new key under `ARTISTS_DATABASE` matching the artist slug (e.g. `"charli-xcx"`).
-2. **Add the Preset Button in `public/index.html`:**
+2. **Add the Preset Button in `public/tourcraft.html`:**
    Add a `<button class="preset-btn" data-artist="charli-xcx">Charli XCX</button>` inside the `#artistPresets` container.
 3. **Add Test Assertions in `test.js`:**
    Verify resolution and database lookup in the automated test suite.
@@ -54,7 +54,7 @@ export const ARTISTS_DATABASE = {
 };
 ```
 
-In `public/index.html`:
+In `public/tourcraft.html`:
 ```html
 <div class="artist-presets" id="artistPresets">
   <!-- Insert new button -->

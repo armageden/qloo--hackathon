@@ -4,6 +4,7 @@
 export const ARTISTS_DATABASE = {
   "chappell-roan": {
     id: "urn:entity:music:chappell_roan",
+    entity_id: "1C8D8828-5739-4304-9506-BA01B3D63516",
     name: "Chappell Roan",
     slug: "chappell-roan",
     genres: ["Midwest Pop", "Synthpop", "Queer Glam", "Camp Pop"],
@@ -48,6 +49,7 @@ export const ARTISTS_DATABASE = {
 
   "kendrick-lamar": {
     id: "urn:entity:music:kendrick_lamar",
+    entity_id: "C915A918-39C5-47A3-A101-D9FA1DECBD9C",
     name: "Kendrick Lamar",
     slug: "kendrick-lamar",
     genres: ["Conscious Hip-Hop", "West Coast Rap", "Jazz Rap", "Pulitzer Cultural"],
@@ -91,6 +93,7 @@ export const ARTISTS_DATABASE = {
 
   "fred-again": {
     id: "urn:entity:music:fred_again",
+    entity_id: "D723CAE9-2A15-4F4B-A8CE-E49F1706D7ED",
     name: "Fred again..",
     slug: "fred-again",
     genres: ["UK Garage", "Emotional House", "Ambient Electronic", "Future Club"],
@@ -134,6 +137,7 @@ export const ARTISTS_DATABASE = {
 
   "john-summit": {
     id: "urn:entity:music:john_summit",
+    entity_id: "739A0174-1A3E-4C87-BF78-EE60F0A8F62F",
     name: "John Summit",
     slug: "john-summit",
     genres: ["Tech House", "Commercial Dance", "Bass House", "Festival Anthem"],
@@ -176,6 +180,7 @@ export const ARTISTS_DATABASE = {
 
   "cedric-the-entertainer": {
     id: "urn:entity:comedy:cedric_the_entertainer",
+    entity_id: "3B124908-B8E6-4CF2-8D3E-2E024CD78BBE",
     name: "Cedric the Entertainer",
     slug: "cedric-the-entertainer",
     genres: ["Stand-up Comedy", "Kings of Comedy", "Cultural Sitcom", "Live Showcase"],
@@ -219,6 +224,7 @@ export const ARTISTS_DATABASE = {
 
   "billie-eilish": {
     id: "urn:entity:music:billie_eilish",
+    entity_id: "DEFAB9FB-2057-41AF-906D-334550EC6F13",
     name: "Billie Eilish",
     slug: "billie-eilish",
     genres: ["Alternative Pop", "Dark Pop", "Eco-Pop", "Art Pop"],
@@ -262,6 +268,7 @@ export const ARTISTS_DATABASE = {
 
   "charli-xcx": {
     id: "urn:entity:music:charli_xcx",
+    entity_id: "B4A3F0F0-354D-4CAD-9F96-11A20709CB9C",
     name: "Charli XCX",
     slug: "charli-xcx",
     genres: ["Hyperpop", "Electropop", "Club Pop", "Brat Pop"],
@@ -301,6 +308,7 @@ export const ARTISTS_DATABASE = {
 
   "tyler-the-creator": {
     id: "urn:entity:music:tyler_the_creator",
+    entity_id: "375758AA-B0FA-4508-8EC1-D7FBFE3A4B3C",
     name: "Tyler, The Creator",
     slug: "tyler-the-creator",
     genres: ["Alternative Hip-Hop", "Neo-Soul", "Jazz Rap", "Auteur Pop"],
@@ -340,6 +348,7 @@ export const ARTISTS_DATABASE = {
 
   "bad-bunny": {
     id: "urn:entity:music:bad_bunny",
+    entity_id: "7890B792-2CFD-4840-AC2D-8F1D2405B183",
     name: "Bad Bunny",
     slug: "bad-bunny",
     genres: ["Reggaeton", "Latin Trap", "Dembo", "Global Pop"],
@@ -609,5 +618,183 @@ export const CITIES_DATABASE = {
         }
       }
     ]
+  },
+
+  "mostar": {
+    name: "Mostar",
+    state: "HNK",
+    country: "Bosnia and Herzegovina",
+    tagline: "The UNESCO Cultural Crossroads of Ottoman Stone & Neretva Emerald Waters",
+    majorVenues: ["Old Bridge Amphitheatre", "Kantarevac Open Air Arena", "Pavarotti Music Centre"],
+    culturalNeighborhoods: [
+      {
+        name: "Old Town (Stari Grad) / Kujundziluk",
+        vibe: "Ancient limestone arches, artisan copper lanes, emerald river terraces, Balkan heritage",
+        topPicks: {
+          dining: [
+            { name: "Hindin Han", type: "Neretva Riverside Dining", address: "Jusovina bb", whyQloo: "Historic riverside mill terrace serving fresh Neretva trout and traditional Mediterranean platters." },
+            { name: "Sadrvan", type: "Heritage Ottoman Feast", address: "Jusovina 11", whyQloo: "Authentic national cuisine served in historic folk attire under shaded stone courtyards." },
+            { name: "Kriva Cuprija Bistro", type: "Crooked Bridge Artisan Bistro", address: "Onescukova 27", whyQloo: "Intimate stone arch dining with local Herzegovina Vranac and Zilavka wines." }
+          ],
+          nightlife: [
+            { name: "Ali Baba Cave Club", type: "Natural Stone Cavern Lounge", address: "Kujundziluk bb", whyQloo: "Underground cavern bar carved directly into the ancient river cliff rocks." },
+            { name: "Black Dog Pub", type: "Craft Beers & Acoustic River Stage", address: "Jusovina bb", whyQloo: "Exposed stone pub overlooking the Radobolja river featuring live Balkan indie sets." },
+            { name: "Calamus Club", type: "Panoramic Rooftop City Lounge", address: "Kralja Tomislava 1", whyQloo: "Elevated panoramic sunset views over the Mostar valley and surrounding karst mountains." }
+          ],
+          fashion: [
+            { name: "Kujundziluk Artisan Quarter", type: "Archival Copper & Filigree Crafts", address: "Kujundziluk", whyQloo: "Century-old artisan metalworking bazaar with bespoke copper tour mementos." },
+            { name: "Atelje Mostar", type: "Traditional Loom & Heritage Textile", address: "Stari Grad", whyQloo: "Handcrafted wool kilims and Mediterranean artisan accessories." }
+          ]
+        }
+      }
+    ]
   }
 };
+
+export function synthesizeCustomArtistData(artistName, resolvedEntity = null) {
+  const cleanName = String(artistName || "Emerging Performer").trim();
+  const tags = (resolvedEntity?.tags || []).map(t => (t.name || t).toLowerCase());
+  const genreList = (resolvedEntity?.properties?.genres || []).map(g => String(g).toLowerCase());
+  const allDescriptors = [...tags, ...genreList, cleanName.toLowerCase()].join(" ");
+
+  if (allDescriptors.includes("hip hop") || allDescriptors.includes("rap") || allDescriptors.includes("trap")) {
+    return {
+      name: cleanName,
+      slug: cleanName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      id: resolvedEntity?.id || `urn:entity:music:${cleanName.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`,
+      entity_id: resolvedEntity?.entity_id || null,
+      genres: ["Contemporary Hip-Hop", "Modern Rap", "Streetwear Culture"],
+      vibe: "Lyrical authority, high-fashion streetwear aesthetics, bass-driven stadium charisma",
+      demographics: { primaryAge: "18-35", genderSkew: "55% Male / 45% Female", topSubcultures: ["Streetwear Aficionados", "Hi-Fi Audiophiles", "Sneakerheads"], culturalOpenness: 0.93 },
+      affinities: {
+        dining: [
+          { name: "High-End Omakase & Japanese Listening Bars", affinityScore: 96, category: "Cuisine", rationale: "Precision craftsmanship and obsessive audio fidelity resonate with hip-hop audiences." },
+          { name: "Modern Heritage Soul Food & Bistros", affinityScore: 94, category: "Heritage Cuisine", rationale: "Deep roots in culinary heritage reimagined with elevated technique." },
+          { name: "Hidden Agave & Bourbon Lounges", affinityScore: 91, category: "Beverage", rationale: "Lowkey, intimate spaces prioritizing single-origin spirits over flashy bottle service." }
+        ],
+        nightlife: [
+          { name: "Audiophile Hi-Fi Vinyl Lounges", affinityScore: 97, category: "Listening Bar", rationale: "Direct affinity for custom acoustic horns, uncompressed vinyl playback, and jazz/funk archives." },
+          { name: "Underground Cypher & Beat-Producer Spaces", affinityScore: 94, category: "Live Music", rationale: "Appreciation for live instrumentation, lyricism, and authentic producer culture." }
+        ],
+        fashion: [
+          { name: "Curated High-End Streetwear & Grails", affinityScore: 97, category: "Apparel", rationale: "Limited sneaker drops, architectural silhouettes, and heritage workwear." },
+          { name: "Tailored Minimalist Workwear", affinityScore: 93, category: "Apparel", rationale: "Elevated chore coats, crisp tees, and bespoke trousers." }
+        ],
+        brands: [
+          { name: "Nike / Jordan", affinityScore: 97, category: "Footwear", activationIdea: "Limited Tour Capsule Drop & Sneaker Customization Station", pitch: "Unrivaled cultural authority and high-converting merchandise velocity." },
+          { name: "pgLang / Converse", affinityScore: 94, category: "Apparel", activationIdea: "Minimalist Pop-up Installation & City Storybook Exhibition", pitch: "Native cultural alignment with visionary creative direction." },
+          { name: "Leica Camera", affinityScore: 91, category: "Culture/Optics", activationIdea: "Tour Photography Studio & Limited Print Gallery", pitch: "Analog photographic prestige matching documentary storytelling." }
+        ],
+        filmTv: [
+          { title: "Atlanta (FX)", affinityScore: 97 },
+          { title: "Do the Right Thing", affinityScore: 95 }
+        ]
+      }
+    };
+  }
+
+  if (allDescriptors.includes("rock") || allDescriptors.includes("metal") || allDescriptors.includes("punk") || allDescriptors.includes("guitar")) {
+    return {
+      name: cleanName,
+      slug: cleanName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      id: resolvedEntity?.id || `urn:entity:music:${cleanName.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`,
+      entity_id: resolvedEntity?.entity_id || null,
+      genres: ["Alternative Rock", "Hard Rock", "Live Festival"],
+      vibe: "High-voltage live energy, authentic instrumentation, passionate underground subculture",
+      demographics: { primaryAge: "21-42", genderSkew: "58% Male / 42% Female", topSubcultures: ["Vinyl Collectors", "Guitar Enthusiasts", "Craft Beer Scene"], culturalOpenness: 0.90 },
+      affinities: {
+        dining: [
+          { name: "Artisanal Craft Brewpubs & Smokehouses", affinityScore: 95, category: "Craft Gastronomy", rationale: "Deep affinity for local micro-breweries and slow-smoked artisanal fare." },
+          { name: "Historic All-Night Rock 'n' Roll Diners", affinityScore: 93, category: "Diner", rationale: "Legendary post-show musician gathering spots." },
+          { name: "Independent Coffee Roasters", affinityScore: 90, category: "Café", rationale: "Third-wave specialty fuel before heavy touring show schedules." }
+        ],
+        nightlife: [
+          { name: "Historic Rock Sanctums & Dive Stages", affinityScore: 98, category: "Live Music", rationale: "Intimate, sweaty venues celebrating high decibels and raw performance." },
+          { name: "Analog Vinyl Jukebox Lounges", affinityScore: 94, category: "Listening Bar", rationale: "Catering to purists who value physical media and rock heritage." }
+        ],
+        fashion: [
+          { name: "Vintage Leather Moto Jackets & Band Tees", affinityScore: 96, category: "Apparel", rationale: "Timeless rebellious aesthetics; distressed denim and worn leather." },
+          { name: "Heritage Work Boots & Raw Denim", affinityScore: 93, category: "Footwear", rationale: "Durable touring essentials built for the road." }
+        ],
+        brands: [
+          { name: "Marshall Amplification", affinityScore: 97, category: "Audio", activationIdea: "Interactive Fan Soundbooth & Vintage Amp Exhibition", pitch: "The gold standard in rock tone; legendary heritage alignment." },
+          { name: "Fender Musical Instruments", affinityScore: 95, category: "Instruments", activationIdea: "Custom Tour Guitar Fitting & Stompbox Demo Lab", pitch: "Direct product identity with touring musicians and guitar fans." },
+          { name: "Vans", affinityScore: 92, category: "Footwear", activationIdea: "DIY Skate Deck & Sneaker Screen-Printing Lab", pitch: "Grassroots punk and skate culture credibility." }
+        ],
+        filmTv: [
+          { title: "Almost Famous", affinityScore: 96 },
+          { title: "Sound City", affinityScore: 94 }
+        ]
+      }
+    };
+  }
+
+  if (allDescriptors.includes("electronic") || allDescriptors.includes("techno") || allDescriptors.includes("house") || allDescriptors.includes("dance") || allDescriptors.includes("dj")) {
+    return {
+      name: cleanName,
+      slug: cleanName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      id: resolvedEntity?.id || `urn:entity:music:${cleanName.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`,
+      entity_id: resolvedEntity?.entity_id || null,
+      genres: ["Electronic", "House & Techno", "Club Culture"],
+      vibe: "Euphoric sound systems, marathon club sets, community dance catharsis",
+      demographics: { primaryAge: "20-34", genderSkew: "51% Male / 49% Female", topSubcultures: ["Electronic Music Community", "Gorpcore / Techwear", "Boiler Room Scene"], culturalOpenness: 0.96 },
+      affinities: {
+        dining: [
+          { name: "Specialty Pour-Over & Third Wave Coffee", affinityScore: 97, category: "Café", rationale: "Essential daytime ritual before marathon late-night club bookings." },
+          { name: "Late-Night Izakayas & Highballs", affinityScore: 95, category: "Dining", rationale: "Fast, high-energy Japanese pub culture favored by touring DJs." },
+          { name: "Sourdough Wood-Fired Pizzerias", affinityScore: 92, category: "Casual Dining", rationale: "Communal, quick, high-craft food perfect for pre-show crew gathering." }
+        ],
+        nightlife: [
+          { name: "360-Degree Boiler Room Warehouses", affinityScore: 99, category: "Rave", rationale: "Unfiltered dancefloor energy with crowd surrounding the selector." },
+          { name: "Intimate Low-Ceiling Sound Basements", affinityScore: 96, category: "Club", rationale: "Custom audio clarity and dark, immersive lighting." }
+        ],
+        fashion: [
+          { name: "Gorpcore & Technical Outdoor (Arc'teryx, Salomon)", affinityScore: 96, category: "Activewear", rationale: "Functional, weather-ready technical gear built for international touring." },
+          { name: "Minimalist Monochrome Clubwear", affinityScore: 92, category: "Streetwear", rationale: "Understated club uniforms that put the sound front and center." }
+        ],
+        brands: [
+          { name: "Pioneer DJ / AlphaTheta", affinityScore: 98, category: "Audio", activationIdea: "Backstage Masterclass & Next-Gen CDJ Demo Lounge", pitch: "The undisputed industry standard for electronic performers." },
+          { name: "Red Bull Music", affinityScore: 93, category: "Culture", activationIdea: "Secret Warehouse 360 DJ Stream Stage", pitch: "Proven grassroots authority in global club scenes." }
+        ],
+        filmTv: [
+          { title: "Berlin Calling", affinityScore: 95 },
+          { title: "Human Traffic", affinityScore: 92 }
+        ]
+      }
+    };
+  }
+
+  // Default: Contemporary Live Performer
+  return {
+    name: cleanName,
+    slug: cleanName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    id: resolvedEntity?.id || `urn:entity:music:${cleanName.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`,
+    entity_id: resolvedEntity?.entity_id || null,
+    genres: resolvedEntity?.properties?.genres || ["Contemporary Live Performance", "Pop / Alternative"],
+    vibe: "Dynamic live performance, high aesthetic engagement, community audience appeal",
+    demographics: { primaryAge: "21-35", genderSkew: "50% Multi-Demographic", topSubcultures: ["Live Music Aficionados", "Indie Creative", "Artisan Dining"], culturalOpenness: 0.91 },
+    affinities: {
+      dining: [
+        { name: "Artisanal Bakeries & Specialty Coffee", affinityScore: 95, category: "Café", rationale: "Morning rituals and creative meetups in local arts corridors." },
+        { name: "Farm-to-Table Seasonal Bistros", affinityScore: 93, category: "Dining", rationale: "Fresh, community-focused culinary experiences with natural wines." },
+        { name: "Craft Botanical Cocktail Parlors", affinityScore: 90, category: "Nightlife/Dining", rationale: "Intimate gathering spaces celebrating craft mixology." }
+      ],
+      nightlife: [
+        { name: "Community-Driven Live Stages", affinityScore: 97, category: "Live Music", rationale: "Vibrant independent venues with curated local selectors." },
+        { name: "Low-Light Hi-Fi Listening Lounges", affinityScore: 93, category: "Lounge", rationale: "Intimate audio spaces prioritizing sound fidelity and conversation." }
+      ],
+      fashion: [
+        { name: "Curated Vintage & Archival Apparel", affinityScore: 96, category: "Retail", rationale: "High preference for unique, sustainable styling and local designers." },
+        { name: "Modern Minimalist Workwear", affinityScore: 91, category: "Apparel", rationale: "Clean architectural lines and durable everyday pieces." }
+      ],
+      brands: [
+        { name: "Dr. Martens", affinityScore: 93, category: "Footwear", activationIdea: "Concourse Boot Customization & Fan Photo Experience", pitch: "Timeless festival staple with shared expressive heritage." },
+        { name: "Polaroid", affinityScore: 90, category: "Lifestyle", activationIdea: "Fan Memories Instant Photo Wall & Guestbook", pitch: "Nostalgic analog aesthetic celebrating live concert memories." }
+      ],
+      filmTv: [
+        { title: "High Fidelity", affinityScore: 94 },
+        { title: "Licorice Pizza", affinityScore: 92 }
+      ]
+    }
+  };
+}

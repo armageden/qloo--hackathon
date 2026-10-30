@@ -6,8 +6,13 @@
 
 ---
 
-## 2. Elevator Pitch (One-Liner)
-TourCraft is an autonomous live experience agent that queries Qloo's 250M+ entity taste graph across music, dining, fashion, nightlife, and brands to architect hyper-localized 24-hour city takeovers and high-converting brand sponsor activations for touring artists and Live Nation promoters.
+## 2. Elevator Pitch (One-Liner / Tagline, <200 chars)
+> **Recommended (180 chars):**
+> Autonomous live experience agent querying Qloo's 250M+ taste graph to architect 24h city takeovers, tour routes, and high-ROI brand activations for touring artists and Live Nation.
+
+*Alternative options under 200 chars:*
+- **175 chars (with project prefix):** `TourCraft: Autonomous agent querying Qloo's 250M+ taste graph to architect 24h city takeovers, tour routes, and high-ROI brand activations for touring artists and Live Nation.`
+- **177 chars (narrative style):** `TourCraft grounds live touring in Qloo's 250M+ taste graph—turning cultural affinities into 24-hr city takeovers, optimized tour routes, and brand sponsor deals for Live Nation.`
 
 ---
 
@@ -48,24 +53,28 @@ We built **TourCraft** to prove that **cultural intelligence is the difference b
 ## 4. How We Built It & Technological Implementation
 - **Qloo Integration Layer (`src/qloo-client.js`)**:
   - Connects to `https://hackathon.api.qloo.com` using `X-Api-Key` headers.
-  - Implements `/search`, `/recs`, `/v2/insights/rank`, and audience demographic queries.
+  - Implements `/search` entity resolution and `/v2/insights` queries with verified 36-character entity UUIDs (`signal.interests.entities`).
+  - Dynamically computes live affinity metrics from Qloo's `b.query.affinity` response payloads and supports geographic place discovery with `filter.location.query`.
   - Features dual-mode architecture: switches between live Qloo API calls and a verified Qloo Grounding Cache, guaranteeing 100% uptime, fast response times, and resilience against network timeouts.
 - **Agent Orchestrator (`src/tour-agent.js`)**:
-  - Multi-stage agent pipeline: Entity Resolution ➔ Cross-Domain Taste Expansion ➔ City Market Geolocation ➔ Itinerary Synthesis ➔ Sponsor Alignment.
-  - Real-time Qloo data citation and grounding in conversational responses.
+  - Multi-stage agent pipeline: Entity Resolution ➔ Dynamic Custom Performer Synthesis (`synthesizeCustomArtistData`) ➔ Cross-Domain Taste Expansion ➔ City Market Geolocation ➔ Itinerary Synthesis ➔ Sponsor Alignment.
+  - Dual-mode conversational Co-Pilot: connects live to Gemini 3.8 Flash for deep strategic reasoning grounded in Qloo taste graph vectors, paired with a deterministic 12-intent offline rule engine for 100% uptime.
+  - Live Nation Promoter Commercial Deal Calculator (`calculatePromoterEconomics`): models gross ancillary revenue unlocks across 4 venue capacity tiers (Club, Theater, Arena, Stadium) including multi-tier title sponsorship valuations, concourse spend lift, and VIP experiential upcharges.
+  - Multi-City Tour Leg Strategic Planner (`planTourLeg`): sequences multi-city tour legs and isolates universal brand partner synergies across markets.
   - Audience Comparison Engine (`compareAudiences`) calculating cross-domain taste overlap percentage, shared affinities, and co-billing festival clash feasibility.
 - **Server, CLI & Model Context Protocol (MCP) (`server.js`, `cli.js`, `qloo.mcp.json`)**:
   - Built with native Node.js 22+ (and Bun 1.3+ compatible) with zero external runtime dependencies.
+  - Serves the TourCraft Cultural Console directly at `/` and `/tourcraft`, with the Mostar showcase preserved at `/mostar`.
   - CLI runner supporting `run`, `status`, `recs`, `chat`, and `compare`.
-  - Built-in JSON-RPC 2.0 MCP server (`node cli.js mcp`) implementing tools `tourcraft_generate`, `tourcraft_compare`, and `tourcraft_recs` for integration with Claude Desktop, Cursor, and agent frameworks.
+  - Built-in JSON-RPC 2.0 MCP server (`node cli.js mcp`) implementing 4 standardized tools: `tourcraft_generate`, `tourcraft_compare`, `tourcraft_recs`, and `tourcraft_chat` for seamless integration with Claude Desktop, Cursor, and agent frameworks.
 - **Frontend Experience (`public/`)**:
-  - High-end dark mode interface inspired by Boiler Room and Live Nation backstage design.
-  - 3-Way Mode Switcher: 24-Hour City Takeover, Festival & Co-Billing Matcher, and Live Qloo Telemetry Inspector.
+  - Wandor light editorial system — typography in Geist + Special Elite, terracotta accent `#905831`, liquid-glass panels, and high-density promoter spec layout.
+  - 5-Way Mode Switcher: 24-Hour City Takeover, Promoter Deal & ROI Calculator, Festival & Co-Billing Matcher, Multi-City Tour Leg Planner, and Qloo API & MCP Inspector.
   - Web Audio API harmonic chord synthesizer ("Sonic Identity") dynamically tuned to artist musical profiles.
-  - Interactive taste affinity progress meters, 24-hour timeline cards, and real-time co-pilot chat.
+  - Interactive taste affinity progress meters, 24-hour timeline cards, and real-time co-pilot chat with AI model provenance badging.
 - **Open Source & Verification**:
   - MIT License in repo.
-  - Automated test suite (`test.js`) passing 17/17 automated tests.
+  - Automated test suite (`test.js`) passing 66/66 automated tests.
   - Automated mechanical documentation sync validator (`npm run docs:check`).
 
 ---
@@ -91,7 +100,7 @@ If you remove Qloo, TourCraft breaks down. No other API or general foundation mo
 
 ## 8. Accomplishments That We're Proud Of
 - Built a zero-dependency full-stack application that boots in under 50ms and runs on pure native Node.js / Bun.
-- Formulated an automated 17-point verification suite with 100% test pass rate.
+- Formulated an automated 66-point verification suite with 100% test pass rate.
 - Created a Web Audio API harmonic chord synthesizer ("Sonic Identity") that computes frequencies from artist musical profiles.
 - Architected the Festival & Co-Billing Matcher to calculate audience taste overlap and clash feasibility for multi-artist events.
 

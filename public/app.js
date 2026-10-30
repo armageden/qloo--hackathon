@@ -1,7 +1,9 @@
 // TourCraft Frontend Application
 // Connects to the TourCraft API and manages the Qloo-powered UI state
 
-const API_BASE = (typeof window !== "undefined" && window.location.protocol.startsWith("http") && window.location.port !== "3000")
+const API_BASE = (typeof window !== "undefined" && window.location.protocol === "file:")
+  ? "http://localhost:3000"
+  : (typeof window !== "undefined" && window.location.hostname === "localhost" && (window.location.port === "5173" || window.location.port === "5500"))
   ? "http://localhost:3000"
   : "";
 
@@ -10,10 +12,9 @@ let currentArtist = "chappell-roan";
 let currentCity = "chicago";
 let activeAffinityTab = "dining";
 let activeViewMode = "takeover";
+let tourRequestId = 0;
 
 // DOM Elements
-const artistPresets = document.querySelectorAll(".preset-btn");
-const cityButtons = document.querySelectorAll(".city-btn");
 const customArtistInput = document.getElementById("customArtistInput");
 const btnSynthesizeTour = document.getElementById("btnSynthesizeTour");
 const loadingState = document.getElementById("loadingState");
@@ -25,12 +26,40 @@ const btnSonicPreview = document.getElementById("btnSonicPreview");
 
 // View Modes
 const tabModeTakeover = document.getElementById("tabModeTakeover");
+const tabModeDeal = document.getElementById("tabModeDeal");
 const tabModeCompare = document.getElementById("tabModeCompare");
+const tabModeRouting = document.getElementById("tabModeRouting");
 const tabModeInspector = document.getElementById("tabModeInspector");
 
 const takeoverConfigCard = document.getElementById("takeoverConfigCard");
+const dealSection = document.getElementById("dealSection");
 const comparisonSection = document.getElementById("comparisonSection");
+const routingSection = document.getElementById("routingSection");
 const inspectorSection = document.getElementById("inspectorSection");
+
+// Status pills
+const llmStatusPill = document.getElementById("llmStatusPill");
+const llmStatusText = document.getElementById("llmStatusText");
+
+// Deal Calculator elements
+const capacityTierSwitcher = document.getElementById("capacityTierSwitcher");
+const kpiTotalAncillary = document.getElementById("kpiTotalAncillary");
+const kpiSponsorshipVal = document.getElementById("kpiSponsorshipVal");
+const kpiConcourseLift = document.getElementById("kpiConcourseLift");
+const kpiRoiLift = document.getElementById("kpiRoiLift");
+const sponsorshipTiersTable = document.getElementById("sponsorshipTiersTable");
+const dealPromoterPitch = document.getElementById("dealPromoterPitch");
+const dealStatBreakdown = document.getElementById("dealStatBreakdown");
+let currentCapacityTier = "arena";
+
+// Routing Planner elements
+const routingPresets = document.getElementById("routingPresets");
+const routeTotalAncillary = document.getElementById("routeTotalAncillary");
+const routeTotalAttendance = document.getElementById("routeTotalAttendance");
+const routeSynergyCount = document.getElementById("routeSynergyCount");
+const routeAvgLift = document.getElementById("routeAvgLift");
+const routeTimeline = document.getElementById("routeTimeline");
+let currentRoutePreset = "major3";
 
 // Comparison Elements
 const compareSelectA = document.getElementById("compareSelectA");
@@ -57,7 +86,16 @@ const btnCloseKeyModal = document.getElementById("btnCloseKeyModal");
 const btnCancelKey = document.getElementById("btnCancelKey");
 const btnSaveKey = document.getElementById("btnSaveKey");
 const inputApiKey = document.getElementById("inputApiKey");
+const inputGeminiKey = document.getElementById("inputGeminiKey");
 const keyValidationResult = document.getElementById("keyValidationResult");
+
+// MCP Modal
+const mcpModal = document.getElementById("mcpModal");
+const btnOpenMcpModal = document.getElementById("btnOpenMcpModal");
+const btnCloseMcpModal = document.getElementById("btnCloseMcpModal");
+const btnCloseMcpModalBtn = document.getElementById("btnCloseMcpModalBtn");
+const btnCopyMcpSnippet = document.getElementById("btnCopyMcpSnippet");
+const mcpConfigSnippet = document.getElementById("mcpConfigSnippet");
 
 const exportModal = document.getElementById("exportModal");
 const btnExportRider = document.getElementById("btnExportRider");
@@ -76,6 +114,7 @@ const chatArtistPrompt = document.getElementById("chatArtistPrompt");
 document.addEventListener("DOMContentLoaded", () => {
   fetchStatus();
   setupEventListeners();
+  initializeBackendData();
   // Auto-generate default tour on load
   generateTour("chappell-roan", "chicago");
 });
@@ -83,29 +122,75 @@ document.addEventListener("DOMContentLoaded", () => {
 function setupEventListeners() {
   // Mode Tabs
   tabModeTakeover.addEventListener("click", () => switchViewMode("takeover"));
+  if (tabModeDeal) tabModeDeal.addEventListener("click", () => switchViewMode("deal"));
   tabModeCompare.addEventListener("click", () => switchViewMode("compare"));
+  if (tabModeRouting) tabModeRouting.addEventListener("click", () => switchViewMode("routing"));
   tabModeInspector.addEventListener("click", () => switchViewMode("inspector"));
+
+  // Capacity Tier Switcher
+  if (capacityTierSwitcher) {
+    capacityTierSwitcher.addEventListener("click", (e) => {
+      const btn = e.target.closest(".tier-btn");
+      if (!btn) return;
+      document.querySelectorAll(".tier-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentCapacityTier = btn.dataset.tier;
+      loadPromoterEconomics(currentCapacityTier);
+    });
+  }
+
+  // Routing Presets Switcher
+  if (routingPresets) {
+    routingPresets.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-route]");
+      if (!btn) return;
+      routingPresets.querySelectorAll("button[data-route]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentRoutePreset = btn.dataset.route;
+      loadTourLeg(currentRoutePreset);
+    });
+  }
+
+  // MCP Modal
+  if (btnOpenMcpModal) {
+    btnOpenMcpModal.addEventListener("click", () => {
+      renderMcpSnippet();
+      if (mcpModal) mcpModal.classList.remove("hidden");
+    });
+  }
+  if (btnCloseMcpModal) btnCloseMcpModal.addEventListener("click", () => mcpModal.classList.add("hidden"));
+  if (btnCloseMcpModalBtn) btnCloseMcpModalBtn.addEventListener("click", () => mcpModal.classList.add("hidden"));
+  if (btnCopyMcpSnippet) {
+    btnCopyMcpSnippet.addEventListener("click", () => {
+      if (mcpConfigSnippet) navigator.clipboard.writeText(mcpConfigSnippet.textContent);
+      btnCopyMcpSnippet.textContent = "Copied!";
+      setTimeout(() => { btnCopyMcpSnippet.textContent = "Copy Config JSON"; }, 2000);
+    });
+  }
 
   // Sonic Preview Button
   btnSonicPreview.addEventListener("click", () => playSonicIdentity(currentArtist));
 
-  // Preset buttons - instant reactivity on click
-  artistPresets.forEach(btn => {
-    btn.addEventListener("click", () => {
-      artistPresets.forEach(b => b.classList.remove("active"));
+  // Preset buttons delegation - instant reactivity for static & dynamic items
+  const artistPresetsContainer = document.getElementById("artistPresets");
+  if (artistPresetsContainer) {
+    artistPresetsContainer.addEventListener("click", (e) => {
+      const btn = e.target.closest(".preset-btn");
+      if (!btn) return;
+      document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentArtist = btn.dataset.artist;
       customArtistInput.value = btn.textContent.trim();
       generateTour(currentArtist, currentCity);
     });
-  });
+  }
 
   // Custom artist input
   customArtistInput.addEventListener("input", (e) => {
     const val = e.target.value.trim();
     if (val) {
       currentArtist = val;
-      artistPresets.forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
     }
   });
 
@@ -116,15 +201,18 @@ function setupEventListeners() {
     }
   });
 
-  // City buttons - instant reactivity on click
-  cityButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      cityButtons.forEach(b => b.classList.remove("active"));
+  // City buttons delegation - instant reactivity for static & dynamic items
+  const citySelectorContainer = document.getElementById("citySelector");
+  if (citySelectorContainer) {
+    citySelectorContainer.addEventListener("click", (e) => {
+      const btn = e.target.closest(".city-btn");
+      if (!btn) return;
+      document.querySelectorAll(".city-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentCity = btn.dataset.city;
       generateTour(currentArtist, currentCity);
     });
-  });
+  }
 
   // Generate button
   btnSynthesizeTour.addEventListener("click", () => {
@@ -163,8 +251,9 @@ function setupEventListeners() {
   btnCancelKey.addEventListener("click", () => keyModal.classList.add("hidden"));
 
   btnSaveKey.addEventListener("click", async () => {
-    const key = inputApiKey.value.trim();
-    keyValidationResult.textContent = "Validating with Qloo API...";
+    const key = inputApiKey ? inputApiKey.value.trim() : "";
+    const geminiKey = inputGeminiKey ? inputGeminiKey.value.trim() : "";
+    keyValidationResult.textContent = "Validating credentials...";
     keyValidationResult.className = "key-status-msg";
 
     try {
@@ -174,13 +263,28 @@ function setupEventListeners() {
         body: JSON.stringify({ apiKey: key })
       });
       const data = await res.json();
-      if (data.configured) {
-        keyValidationResult.textContent = "Key saved! Live Qloo connection established.";
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}: ${res.statusText}`);
+
+      if (geminiKey) {
+        await fetch(`${API_BASE}/api/config/llm`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ apiKey: geminiKey })
+        });
+      }
+
+      if (data.configured && data.verification?.ready) {
+        keyValidationResult.textContent = "Credentials verified! Live connection established.";
         keyValidationResult.className = "key-status-msg success";
         fetchStatus();
         setTimeout(() => keyModal.classList.add("hidden"), 1200);
+      } else if (data.configured && !data.verification?.ready) {
+        const reason = data.verification?.statusText || data.verification?.status || "verification failed";
+        keyValidationResult.textContent = `Key saved, but live test failed (${reason}). Running in Grounded Taste Cache mode.`;
+        keyValidationResult.className = "key-status-msg";
+        fetchStatus();
       } else {
-        keyValidationResult.textContent = "Key saved. Running in grounded taste cache mode.";
+        keyValidationResult.textContent = "Key cleared. Running in Grounded Taste Cache mode.";
         keyValidationResult.className = "key-status-msg";
         fetchStatus();
         setTimeout(() => keyModal.classList.add("hidden"), 1200);
@@ -188,6 +292,25 @@ function setupEventListeners() {
     } catch (e) {
       keyValidationResult.textContent = "Failed to update key: " + e.message;
       keyValidationResult.className = "key-status-msg error";
+    }
+  });
+
+  // Modal accessibility: Escape key & backdrop click handlers
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (keyModal) keyModal.classList.add("hidden");
+      if (exportModal) exportModal.classList.add("hidden");
+      if (mcpModal) mcpModal.classList.add("hidden");
+    }
+  });
+
+  [keyModal, exportModal, mcpModal].forEach(modal => {
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.classList.add("hidden");
+        }
+      });
     }
   });
 
@@ -254,7 +377,10 @@ async function submitChat(query) {
     const el = document.getElementById(thinkingId);
     if (el) el.remove();
     if (data && data.answer) {
-      appendAgentMessage(data.answer, data.dataPoints);
+      appendAgentMessage(data.answer, data.dataPoints, data.source);
+      if (rawJsonInspector) {
+        rawJsonInspector.textContent = JSON.stringify(data, null, 2);
+      }
     } else {
       appendAgentMessage("I analyzed the taste graph for this query, but no explicit match was returned. Try asking about fan fashion, dining, or afterparty spots.", []);
     }
@@ -269,15 +395,23 @@ async function submitChat(query) {
 function switchViewMode(mode) {
   activeViewMode = mode;
   tabModeTakeover.classList.toggle("active", mode === "takeover");
+  if (tabModeDeal) tabModeDeal.classList.toggle("active", mode === "deal");
   tabModeCompare.classList.toggle("active", mode === "compare");
+  if (tabModeRouting) tabModeRouting.classList.toggle("active", mode === "routing");
   tabModeInspector.classList.toggle("active", mode === "inspector");
 
   takeoverConfigCard.classList.toggle("hidden", mode !== "takeover");
   tourResults.classList.toggle("hidden", mode !== "takeover" || !currentTourPackage);
+  if (dealSection) dealSection.classList.toggle("hidden", mode !== "deal");
   comparisonSection.classList.toggle("hidden", mode !== "compare");
+  if (routingSection) routingSection.classList.toggle("hidden", mode !== "routing");
   inspectorSection.classList.toggle("hidden", mode !== "inspector");
 
-  if (mode === "compare" && comparisonResultsCard.classList.contains("hidden")) {
+  if (mode === "deal") {
+    loadPromoterEconomics(currentCapacityTier);
+  } else if (mode === "routing") {
+    loadTourLeg(currentRoutePreset);
+  } else if (mode === "compare" && comparisonResultsCard.classList.contains("hidden")) {
     runComparison();
   }
 }
@@ -408,19 +542,269 @@ async function fetchStatus() {
       qlooStatusText.textContent = "Qloo Grounded Cache: Active";
     }
 
-    if (inspectorArtistCount) inspectorArtistCount.textContent = data.artistsCount || 9;
-    if (inspectorCityCount) inspectorCityCount.textContent = data.citiesCount || 7;
+    if (llmStatusPill && llmStatusText) {
+      if (data.hasGeminiKey) {
+        llmStatusPill.className = "qloo-status-pill llm-pill live";
+        llmStatusText.textContent = `AI COPILOT: ${data.geminiModel ? data.geminiModel.toUpperCase() : 'GEMINI 3.8 FLASH'}`;
+      } else {
+        llmStatusPill.className = "qloo-status-pill llm-pill unconfigured";
+        llmStatusText.textContent = "AI COPILOT: GROUNDED ENGINE";
+      }
+    }
+
+    if (inspectorArtistCount) inspectorArtistCount.textContent = `${data.artistsCount || 9} Headliners`;
+    if (inspectorCityCount) inspectorCityCount.textContent = `${data.citiesCount || 8} Global Cities`;
   } catch (e) {
     console.warn("Status check failed, running grounded cache fallback:", e);
     qlooStatusPill.className = "qloo-status-pill unconfigured";
     qlooStatusText.textContent = "Qloo Grounded Cache: Active";
-    if (inspectorArtistCount) inspectorArtistCount.textContent = 9;
-    if (inspectorCityCount) inspectorCityCount.textContent = 7;
+    if (llmStatusPill && llmStatusText) {
+      llmStatusPill.className = "qloo-status-pill llm-pill unconfigured";
+      llmStatusText.textContent = "AI COPILOT: GROUNDED ENGINE";
+    }
+    if (inspectorArtistCount) inspectorArtistCount.textContent = "9 Headliners";
+    if (inspectorCityCount) inspectorCityCount.textContent = "8 Global Cities";
+  }
+}
+
+// Promoter Economics & Deal Model Loader
+async function loadPromoterEconomics(tier = "arena") {
+  if (!currentTourPackage) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/deal/calculate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ package: currentTourPackage, capacityTier: tier })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const deal = await res.json();
+    renderPromoterEconomics(deal);
+  } catch (err) {
+    console.warn("Deal calculation error, falling back locally:", err);
+  }
+}
+
+function renderPromoterEconomics(deal) {
+  if (!deal) return;
+  if (kpiTotalAncillary) kpiTotalAncillary.textContent = `$${deal.totalAncillaryRevenue.toLocaleString()}`;
+  if (kpiSponsorshipVal) kpiSponsorshipVal.textContent = `$${deal.totalSponsorshipValue.toLocaleString()}`;
+  if (kpiConcourseLift) kpiConcourseLift.textContent = `+$${(deal.concourseLift.qlooPerHead - deal.concourseLift.genericPerHead).toFixed(2)} / head (+${deal.concourseLift.spendIncreasePct}%)`;
+  if (kpiRoiLift) kpiRoiLift.textContent = `+${deal.roiLiftPercentage}%`;
+
+  if (sponsorshipTiersTable) {
+    sponsorshipTiersTable.innerHTML = deal.sponsorshipTiers.map(t => `
+      <div class="tier-row" style="background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <span style="font-weight: 700; font-size: 14px;">${t.tierName}</span>
+          <span style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-terracotta); font-size: 15px;">$${t.dealValue.toLocaleString()}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted);">
+          <span>Partner: <strong style="color: var(--text-primary);">${t.partner}</strong></span>
+          <span>•</span>
+          <span class="affinity-score-badge" style="font-size: 10px;">${t.affinityScore}% AFFINITY</span>
+        </div>
+        <p style="font-size: 12px; margin-top: 6px; color: var(--text-secondary);">${t.deliverable}</p>
+      </div>
+    `).join("");
+  }
+
+  if (dealPromoterPitch) {
+    dealPromoterPitch.innerHTML = `
+      <p style="font-style: italic; line-height: 1.5; color: var(--text-primary);">${deal.promoterPitch}</p>
+    `;
+  }
+
+  if (dealStatBreakdown) {
+    dealStatBreakdown.innerHTML = `
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+        <div style="background: rgba(0,0,0,0.02); padding: 8px; border-radius: 6px;">
+          <span style="color: var(--text-muted); display: block;">Base Ticket Gross</span>
+          <strong style="font-size: 14px; font-family: var(--font-mono);">$${deal.ticketGross.toLocaleString()}</strong>
+        </div>
+        <div style="background: rgba(0,0,0,0.02); padding: 8px; border-radius: 6px;">
+          <span style="color: var(--text-muted); display: block;">VIP Experience Gross</span>
+          <strong style="font-size: 14px; font-family: var(--font-mono);">$${deal.vipExperientialLift.vipGross.toLocaleString()}</strong>
+        </div>
+      </div>
+    `;
+  }
+
+  if (rawJsonInspector && activeViewMode === "deal") {
+    rawJsonInspector.textContent = JSON.stringify(deal, null, 2);
+  }
+}
+
+// Multi-City Tour Leg Strategic Planner Loader
+async function loadTourLeg(routeKey = "major3") {
+  const routeCityMap = {
+    "major3": ["chicago", "new-york", "los-angeles"],
+    "transatlantic": ["new-york", "london", "berlin"],
+    "sunbelt": ["austin", "los-angeles", "tokyo"]
+  };
+  const cities = routeCityMap[routeKey] || routeCityMap.major3;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/tour/route`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ artist: currentArtist, cities })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const leg = await res.json();
+    renderTourLeg(leg);
+  } catch (err) {
+    console.warn("Tour leg route calculation failed:", err);
+  }
+}
+
+function renderTourLeg(leg) {
+  if (!leg) return;
+  if (routeTotalAncillary) routeTotalAncillary.textContent = `$${leg.aggregateStats.totalAncillaryRevenue.toLocaleString()}`;
+  if (routeTotalAttendance) routeTotalAttendance.textContent = `${leg.aggregateStats.totalAttendanceCap.toLocaleString()} Fans`;
+  if (routeSynergyCount) routeSynergyCount.textContent = `${leg.multiCitySponsorSynergy.length} Universal Brands`;
+  if (routeAvgLift) routeAvgLift.textContent = leg.aggregateStats.averagePerStopLift;
+
+  if (routeTimeline) {
+    routeTimeline.innerHTML = leg.stops.map((s, idx) => `
+      <div class="route-stop-card" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: 8px; padding: 14px 18px; margin-bottom: 10px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <span style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-terracotta); font-size: 16px;">0${idx + 1}</span>
+          <div>
+            <h4 style="margin: 0; font-size: 15px;">${s.city} • <span style="font-weight: 400; color: var(--text-muted);">${s.venue}</span></h4>
+            <span style="font-size: 12px; color: var(--text-secondary);">Anchor Partner: <strong>${s.topBrand}</strong> (${s.affinityScore}% Qloo Index)</span>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <span style="display: block; font-family: var(--font-mono); font-weight: 700; font-size: 15px; color: var(--accent-terracotta);">$${s.ancillaryUnlock.toLocaleString()}</span>
+          <span style="font-size: 11px; color: var(--text-muted);">Projected Ancillary Unlock</span>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  if (rawJsonInspector && activeViewMode === "routing") {
+    rawJsonInspector.textContent = JSON.stringify(leg, null, 2);
+  }
+}
+
+function renderMcpSnippet() {
+  if (!mcpConfigSnippet) return;
+  const snippet = {
+    mcpServers: {
+      tourcraft: {
+        command: "node",
+        args: ["cli.js", "mcp"],
+        env: {
+          QLOO_API_KEY: "your_qloo_api_key_here",
+          GEMINI_API_KEY: "your_gemini_api_key_here"
+        }
+      }
+    }
+  };
+  mcpConfigSnippet.textContent = JSON.stringify(snippet, null, 2);
+}
+
+// Dynamically synchronize artists and cities from the backend REST API
+async function initializeBackendData() {
+  try {
+    const [artistsRes, citiesRes] = await Promise.all([
+      fetch(`${API_BASE}/api/artists`),
+      fetch(`${API_BASE}/api/cities`)
+    ]);
+
+    if (artistsRes.ok) {
+      const { artists } = await artistsRes.json();
+      if (Array.isArray(artists) && artists.length > 0) {
+        syncArtistPresets(artists);
+        syncCompareDropdowns(artists);
+      }
+    }
+
+    if (citiesRes.ok) {
+      const { cities } = await citiesRes.json();
+      if (Array.isArray(cities) && cities.length > 0) {
+        syncCityButtons(cities);
+      }
+    }
+  } catch (err) {
+    console.warn("Dynamic artist/city hydration fallback to HTML defaults:", err);
+  }
+}
+
+function syncArtistPresets(artists) {
+  const container = document.getElementById("artistPresets");
+  if (!container) return;
+  const existingSlugs = new Set(Array.from(container.querySelectorAll(".preset-btn")).map(b => b.dataset.artist));
+
+  for (const a of artists) {
+    if (!existingSlugs.has(a.slug)) {
+      const btn = document.createElement("button");
+      btn.className = "preset-btn";
+      btn.dataset.artist = a.slug;
+      btn.type = "button";
+      btn.innerHTML = `<span class="preset-dot"></span>${a.name}`;
+      container.appendChild(btn);
+    }
+  }
+}
+
+function syncCompareDropdowns(artists) {
+  [compareSelectA, compareSelectB].forEach((select) => {
+    if (!select) return;
+    const currentVal = select.value;
+    const existingValues = new Set(Array.from(select.options).map(o => o.value));
+    for (const a of artists) {
+      if (!existingValues.has(a.slug)) {
+        const opt = document.createElement("option");
+        opt.value = a.slug;
+        opt.textContent = a.name;
+        select.appendChild(opt);
+      }
+    }
+    if (currentVal) select.value = currentVal;
+  });
+}
+
+function syncCityButtons(cities) {
+  const container = document.getElementById("citySelector");
+  if (!container) return;
+  const existingCities = new Set(Array.from(container.querySelectorAll(".city-btn")).map(b => b.dataset.city));
+
+  const codeMap = {
+    "chicago": "ORD",
+    "new-york": "JFK",
+    "los-angeles": "LAX",
+    "london": "LHR",
+    "austin": "AUS",
+    "tokyo": "HND",
+    "berlin": "BER",
+    "mostar": "OMO"
+  };
+
+  for (const c of cities) {
+    if (!existingCities.has(c.key)) {
+      const btn = document.createElement("button");
+      btn.className = "city-btn";
+      btn.dataset.city = c.key;
+      btn.type = "button";
+      const code = codeMap[c.key] || c.key.slice(0, 3).toUpperCase();
+      const loc = c.state ? `${c.name}, ${c.state}` : `${c.name}, ${c.country}`;
+      const venue = c.venues && c.venues[0] ? `${c.venues[0]} • verified` : "Main Arena";
+      btn.innerHTML = `
+        <span class="city-header-row">
+          <span class="city-name">${loc}</span>
+          <span class="city-code">${code}</span>
+        </span>
+        <span class="city-venue">${venue}</span>
+      `;
+      container.appendChild(btn);
+    }
   }
 }
 
 // Generate Tour Package
 async function generateTour(artist, city) {
+  const requestId = ++tourRequestId;
   loadingState.classList.remove("hidden");
   tourResults.classList.add("hidden");
 
@@ -432,19 +816,26 @@ async function generateTour(artist, city) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     const pkg = await res.json();
+    if (requestId !== tourRequestId) return;
+    if (!pkg?.metadata || !pkg?.artistProfile || !Array.isArray(pkg?.itinerary)) {
+      throw new Error("Invalid tour package response");
+    }
     currentTourPackage = pkg;
     renderTourPackage(pkg);
     rawJsonInspector.textContent = JSON.stringify(pkg, null, 2);
   } catch (err) {
-    console.warn("Tour generation API failed, using grounded fallback:", err);
+    if (requestId !== tourRequestId) return;
+    console.warn("Tour generation API failed, using local fallback:", err);
     const pkg = synthesizeFallbackTourPackage(artist, city);
     currentTourPackage = pkg;
     renderTourPackage(pkg);
     rawJsonInspector.textContent = JSON.stringify(pkg, null, 2);
   } finally {
-    loadingState.classList.add("hidden");
-    if (activeViewMode === "takeover") {
-      tourResults.classList.remove("hidden");
+    if (requestId === tourRequestId) {
+      loadingState.classList.add("hidden");
+      if (activeViewMode === "takeover") {
+        tourResults.classList.remove("hidden");
+      }
     }
   }
 }
@@ -454,7 +845,8 @@ function renderTourPackage(pkg) {
   const { metadata, artistProfile, culturalAffinities, itinerary, brandSponsorshipMatrix, executiveSummary } = pkg;
 
   // Header
-  document.getElementById("badgeCityMarket").textContent = `${metadata.city.toUpperCase()}, ${metadata.state || ''} • ${metadata.venue.toUpperCase()}`;
+  const locState = metadata.state || metadata.country;
+  document.getElementById("badgeCityMarket").textContent = `${metadata.city.toUpperCase()}${locState ? `, ${locState.toUpperCase()}` : ''} • ${metadata.venue.toUpperCase()}`;
   document.getElementById("displayArtistName").textContent = metadata.artist;
   document.getElementById("displayArtistVibe").textContent = artistProfile.vibe || "Multi-category live tour experience";
   document.getElementById("displayProvenance").textContent = metadata.dataSource;
@@ -482,6 +874,25 @@ function renderTourPackage(pkg) {
 
   // Update Chat
   chatArtistPrompt.textContent = metadata.artist;
+  updateChatQuickPrompts(metadata.artist, metadata.city, culturalAffinities);
+
+  // Synchronize Live Nation promoter deal economics
+  loadPromoterEconomics(currentCapacityTier);
+}
+
+function updateChatQuickPrompts(artistName, cityName, affinities) {
+  const container = document.querySelector(".chat-quick-prompts");
+  if (!container) return;
+
+  const topDining = affinities?.dining?.[0]?.name || "natural wine & bistro dining";
+  const topFashion = affinities?.fashion?.[0]?.name || "fan styling & aesthetic";
+
+  container.innerHTML = `
+    <button class="quick-chip" type="button" onclick="askQuickQuestion('Why did Qloo recommend ${topDining.replace(/'/g, "\\'")} in ${cityName}?')">Why ${topDining}?</button>
+    <button class="quick-chip" type="button" onclick="askQuickQuestion('What brand sponsorship would fail for ${artistName.replace(/'/g, "\\'")}?')">Risky brand sponsors?</button>
+    <button class="quick-chip" type="button" onclick="askQuickQuestion('Compare ${artistName.replace(/'/g, "\\'")} fans to mainstream pop.')">Mainstream comparison?</button>
+    <button class="quick-chip" type="button" onclick="askQuickQuestion('What does the fanbase wear and what is their fashion aesthetic?')">Fan fashion & style?</button>
+  `;
 }
 
 function renderAffinities() {
@@ -495,22 +906,30 @@ function renderAffinities() {
     return;
   }
 
-  container.innerHTML = items.map(item => `
-    <div class="affinity-item">
-      <div class="affinity-item-top">
-        <span class="affinity-name">${item.name}</span>
-        <span class="affinity-score-badge">${item.affinityScore}% MATCH</span>
+  container.innerHTML = items.map(item => {
+    const itemName = item.name || item.title || "Cultural Vector";
+    const itemRationale = item.rationale || item.pitch || (item.title ? "Strong cross-domain media correlation in Qloo graph." : "High cross-domain audience alignment.");
+    return `
+      <div class="affinity-item">
+        <div class="affinity-item-top">
+          <span class="affinity-name">${itemName}</span>
+          <span class="affinity-score-badge">${item.affinityScore}% MATCH</span>
+        </div>
+        <div class="affinity-meter-bg">
+          <div class="affinity-meter-fill" style="width: ${item.affinityScore}%"></div>
+        </div>
+        <p class="affinity-rationale">${itemRationale}</p>
       </div>
-      <div class="affinity-meter-bg">
-        <div class="affinity-meter-fill" style="width: ${item.affinityScore}%"></div>
-      </div>
-      <p class="affinity-rationale">${item.rationale || item.pitch || 'High cross-domain audience alignment.'}</p>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
 function renderItinerary(itinerary, cityName) {
   document.getElementById("itineraryCityLabel").textContent = `Curated 24-Hour Plan for ${cityName}`;
+  const badge = document.querySelector(".itinerary-badge");
+  if (badge) {
+    badge.textContent = `${itinerary.length} STOPS CURATED`;
+  }
   const container = document.getElementById("timelineContainer");
 
   container.innerHTML = itinerary.map(step => `
@@ -557,10 +976,14 @@ function appendUserMessage(text) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function appendAgentMessage(text, dataPoints = []) {
+function appendAgentMessage(text, dataPoints = [], source = null) {
   const div = document.createElement("div");
   div.className = "chat-bubble agent";
-  let html = `<p>${text}</p>`;
+  let badgeHtml = "";
+  if (source && (source.includes("gemini") || source.includes("llm"))) {
+    badgeHtml = `<div class="ai-source-badge" style="font-family: var(--font-mono); font-size: 10px; color: #2b7a4b; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px; background: rgba(43,122,75,0.08); padding: 2px 8px; border-radius: 4px;"><span class="brand-pulse" style="width:5px;height:5px;background:#2b7a4b;"></span> ⚡ POWERED BY GEMINI 3.8 FLASH // QLOO GROUNDED</div>`;
+  }
+  let html = `${badgeHtml}<p>${text}</p>`;
 
   if (dataPoints && dataPoints.length > 0) {
     html += `<div class="chat-datapoint-list">`;
@@ -724,13 +1147,16 @@ function synthesizeFallbackTourPackage(artistSlug, cityKey) {
     "london": { name: "London", state: "ENG", country: "UK", venue: "The O2 Arena", breakfast: "Towpath Cafe", vintage: "Rokit Vintage", preShow: "Brilliant Corners", afterparty: "Dalston Superstore", lateNight: "Beigel Bake" },
     "austin": { name: "Austin", state: "TX", country: "USA", venue: "Moody Center", breakfast: "Bouldin Creek Cafe", vintage: "Feathers Vintage", preShow: "Justine's Brasserie", afterparty: "Cheer Up Charlies", lateNight: "Tyson's Tacos" },
     "tokyo": { name: "Tokyo", state: "TYO", country: "Japan", venue: "Tokyo Dome", breakfast: "About Life Coffee Brewers", vintage: "Chicago Thrift Shimokitazawa", preShow: "Bar Trench", afterparty: "Vent Tokyo", lateNight: "Ichiran Shibuya" },
-    "berlin": { name: "Berlin", state: "BER", country: "Germany", venue: "Uber Arena", breakfast: "Silil Café", vintage: "Sing Blackbird", preShow: "Michelberger Restaurant", afterparty: "Watergate", lateNight: "Mustafa's Gemüse Kebap" }
+    "berlin": { name: "Berlin", state: "BER", country: "Germany", venue: "Uber Arena", breakfast: "Silil Café", vintage: "Sing Blackbird", preShow: "Michelberger Restaurant", afterparty: "Watergate", lateNight: "Mustafa's Gemüse Kebap" },
+    "mostar": { name: "Mostar", state: "HNK", country: "Bosnia and Herzegovina", venue: "Old Bridge Amphitheatre", breakfast: "Hindin Han", vintage: "Kujundziluk Artisan Quarter", preShow: "Sadrvan", afterparty: "Ali Baba Cave Club", lateNight: "Kriva Cuprija Bistro" }
   };
 
-  const aKey = Object.keys(artistMap).find(k => k === artistSlug || (artistSlug && artistSlug.toLowerCase().includes(k))) || "chappell-roan";
-  const cKey = Object.keys(cityMap).find(k => k === cityKey || (cityKey && cityKey.toLowerCase().includes(k))) || "chicago";
-  const a = artistMap[aKey];
-  const c = cityMap[cKey];
+  const aKey = Object.keys(artistMap).find(k => k === artistSlug || (artistSlug && artistSlug.toLowerCase().includes(k))) || String(artistSlug || "chappell-roan").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-");
+  const cKey = Object.keys(cityMap).find(k => k === cityKey || (cityKey && cityKey.toLowerCase().includes(k))) || String(cityKey || "chicago").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-");
+  const artistName = artistMap[aKey]?.name || String(artistSlug || "Chappell Roan").trim();
+  const cityName = cityMap[cKey]?.name || String(cityKey || "Chicago").trim().replace(/\b\w/g, char => char.toUpperCase());
+  const a = artistMap[aKey] || { name: artistName, vibe: "Cultural exploration based on the selected performer", genres: ["Live Performance"], demo: { primaryAge: "21-35", genderSkew: "Multi-Demographic", culturalOpenness: 0.88, topSubcultures: ["Live Music", "Arts", "Culture"] }, dining: "Local dining and gathering places", fashion: "Local creative and independent fashion", club: "Local live music and nightlife", sponsor: "Local cultural partners" };
+  const c = cityMap[cKey] || { name: cityName, state: "", country: "", venue: "Local performance venue", breakfast: "Local café", vintage: "Local creative district", preShow: "Local restaurant", afterparty: "Local live music venue", lateNight: "Local late-night dining" };
 
   return {
     metadata: {
@@ -742,8 +1168,9 @@ function synthesizeFallbackTourPackage(artistSlug, cityKey) {
       venue: c.venue,
       timestamp: new Date().toISOString(),
       executionTimeMs: 120,
-      dataSource: "Qloo Cultural Taste Graph Grounding",
-      qlooMode: "grounded_taste_graph"
+      dataSource: "Local browser fallback (backend unavailable)",
+      qlooMode: "local_fallback",
+      provenance: { entityResolution: "local_browser_fallback", recommendations: "local_browser_fallback", cityAndItinerary: "local_browser_fallback", liveDataUsed: false }
     },
     artistProfile: {
       genres: a.genres,

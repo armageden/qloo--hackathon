@@ -164,6 +164,19 @@ async function handleMcpRequest(req) {
               },
               required: ["artist"]
             }
+          },
+          {
+            name: "tourcraft_chat",
+            description: "Query the TourCraft Qloo-grounded conversational co-pilot regarding fan demographics, dining/nightlife affinities, risky brand sponsors, or audience comparisons.",
+            inputSchema: {
+              type: "object",
+              properties: {
+                query: { type: "string", description: "The natural language question to ask the TourCraft agent" },
+                artist: { type: "string", description: "Optional artist name or slug context" },
+                city: { type: "string", description: "Optional tour market context" }
+              },
+              required: ["query"]
+            }
           }
         ]
       }
@@ -202,6 +215,21 @@ async function handleMcpRequest(req) {
         id,
         result: {
           content: [{ type: "text", text: JSON.stringify(res, null, 2) }]
+        }
+      };
+    }
+
+    if (name === "tourcraft_chat") {
+      let activePackage = null;
+      if (toolArgs.artist || toolArgs.city) {
+        activePackage = await tourAgent.generateTourPackage(toolArgs.artist || "chappell-roan", toolArgs.city || "chicago");
+      }
+      const answer = await tourAgent.answerAgentQuery(toolArgs.query || "", activePackage);
+      return {
+        jsonrpc: "2.0",
+        id,
+        result: {
+          content: [{ type: "text", text: JSON.stringify(answer, null, 2) }]
         }
       };
     }

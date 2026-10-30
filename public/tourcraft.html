@@ -7,8 +7,8 @@
   <meta name="description" content="Autonomous Cultural Tour & Live Experience Engine powered by the Qloo Taste Graph (250M+ Entities). Grounding live tours in cultural intelligence.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <div class="app-container">
@@ -30,6 +30,10 @@
           <span class="status-dot"></span>
           <span class="status-text" id="qlooStatusText">QLOO GRAPH: ONLINE</span>
         </div>
+        <div class="qloo-status-pill llm-pill" id="llmStatusPill">
+          <span class="status-dot" style="background: #2b7a4b;"></span>
+          <span class="status-text" id="llmStatusText">AI COPILOT: GEMINI 3.8 FLASH</span>
+        </div>
         <button class="btn btn-secondary" id="btnSonicPreview" title="Synthesize live harmonic chord from artist musical frequencies">
           <span class="eq-icon">
             <span class="eq-bar"></span>
@@ -39,15 +43,19 @@
           </span>
           <span class="btn-text">Sonic Identity</span>
         </button>
+        <button class="btn btn-secondary" id="btnOpenMcpModal" title="View Model Context Protocol (MCP) Integration Spec">
+          <span style="font-family: var(--font-mono); font-weight:700;">MCP</span>
+          Tools
+        </button>
         <button class="btn btn-secondary" id="btnOpenKeyModal">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-          API Key
+          Keys
         </button>
         <button class="btn btn-primary" id="btnExportRider">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Export Rider
         </button>
-        <a href="/" class="btn btn-secondary" id="btnBackToCinematic" title="Experience Mostar City Cinematic Scroll Page" style="text-decoration: none;">
+        <a href="/mostar" class="btn btn-secondary" id="btnBackToCinematic" title="Experience Mostar City Showcase Page" style="text-decoration: none;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           Mostar Story ↗
         </a>
@@ -76,11 +84,17 @@
             <button class="mode-tab active" id="tabModeTakeover" type="button">
               <span class="tab-index">01</span> 24-Hour City Takeover
             </button>
+            <button class="mode-tab" id="tabModeDeal" type="button">
+              <span class="tab-index">02</span> Promoter Deal & ROI Calculator
+            </button>
             <button class="mode-tab" id="tabModeCompare" type="button">
-              <span class="tab-index">02</span> Festival & Co-Billing Matcher
+              <span class="tab-index">03</span> Festival & Co-Billing Matcher
+            </button>
+            <button class="mode-tab" id="tabModeRouting" type="button">
+              <span class="tab-index">04</span> Multi-City Tour Leg Planner
             </button>
             <button class="mode-tab" id="tabModeInspector" type="button">
-              <span class="tab-index">03</span> Qloo API Inspector
+              <span class="tab-index">05</span> Qloo API & Telemetry Inspector
             </button>
           </div>
         </div>
@@ -185,6 +199,13 @@
                   </span>
                   <span class="city-venue">Uber Arena • 17k cap</span>
                 </button>
+                <button class="city-btn" data-city="mostar" type="button">
+                  <span class="city-header-row">
+                    <span class="city-name">Mostar, BA</span>
+                    <span class="city-code">OMO</span>
+                  </span>
+                  <span class="city-venue">Old Bridge Arena • 12k cap</span>
+                </button>
               </div>
             </div>
           </div>
@@ -286,6 +307,7 @@
                 <button class="tab-btn" data-tab="nightlife">Nightlife</button>
                 <button class="tab-btn" data-tab="fashion">Fashion</button>
                 <button class="tab-btn" data-tab="brands">Brands</button>
+                <button class="tab-btn" data-tab="filmTv">Film &amp; TV</button>
               </div>
 
               <div class="affinity-list" id="affinityListContainer">
@@ -448,6 +470,118 @@
         </div>
       </section>
 
+      <!-- Promoter Deal & Ancillary ROI Calculator Section -->
+      <section class="deal-section hidden" id="dealSection">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-main">
+              <h2 class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                Live Nation Promoter Deal & Ancillary ROI Model
+              </h2>
+              <p class="card-subtitle">Quantified commercial unlock calculated from Qloo Taste Graph audience affinity across venue tiers.</p>
+            </div>
+            <div class="capacity-tier-switcher" id="capacityTierSwitcher">
+              <button class="tier-btn" data-tier="club" type="button">Club (1.5k)</button>
+              <button class="tier-btn" data-tier="theater" type="button">Theater (5k)</button>
+              <button class="tier-btn active" data-tier="arena" type="button">Arena (20k)</button>
+              <button class="tier-btn" data-tier="stadium" type="button">Stadium (60k)</button>
+            </div>
+          </div>
+
+          <div class="deal-kpi-grid">
+            <div class="kpi-card highlight">
+              <span class="kpi-label">TOTAL ANCILLARY UNLOCK</span>
+              <span class="kpi-value" id="kpiTotalAncillary">$465,000</span>
+              <span class="kpi-sub">Sponsorship + Concourse Lift + VIP</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">SPONSORSHIP VALUATION</span>
+              <span class="kpi-value" id="kpiSponsorshipVal">$280,000</span>
+              <span class="kpi-sub">3 Tier Rights Packages</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">CONCOURSE SPEND LIFT</span>
+              <span class="kpi-value" id="kpiConcourseLift">+$6.70 / head</span>
+              <span class="kpi-sub">+71% over generic F&B average</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">SENTIMENT & CONVERSION LIFT</span>
+              <span class="kpi-value" id="kpiRoiLift">+42%</span>
+              <span class="kpi-sub">vs Generic Beverage/Telecom Partner</span>
+            </div>
+          </div>
+
+          <div class="deal-details-grid" style="margin-top: 24px;">
+            <div class="deal-col">
+              <h3 class="card-title">Commercial Sponsorship Rights Tiers</h3>
+              <p class="card-subtitle">Recommended multi-tier package rights grounded in Qloo fan affinities</p>
+              <div class="sponsorship-tiers-table" id="sponsorshipTiersTable">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <div class="deal-col">
+              <h3 class="card-title">Executive Promoter Value Pitch</h3>
+              <p class="card-subtitle">Ready for artist management, venue operators, and corporate brand decks</p>
+              <div class="pitch-quote-box" id="dealPromoterPitch">
+                <!-- Dynamically populated -->
+              </div>
+              <div class="deal-stat-breakdown" id="dealStatBreakdown" style="margin-top: 16px;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Multi-City Tour Leg Planner Section -->
+      <section class="routing-section hidden" id="routingSection">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-main">
+              <h2 class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="12 2 15 8 12 14 9 8 12 2"/><polygon points="12 14 15 20 12 22 9 20 12 14"/></svg>
+                Multi-City Tour Leg Strategic Planner
+              </h2>
+              <p class="card-subtitle">Route planning across metropolitan tour markets with cumulative attendance and multi-city brand synergies.</p>
+            </div>
+            <div class="routing-presets" id="routingPresets">
+              <button class="btn btn-secondary btn-sm active" data-route="major3" type="button">Tri-Market (ORD-JFK-LAX)</button>
+              <button class="btn btn-secondary btn-sm" data-route="transatlantic" type="button">Transatlantic (NYC-LON-BER)</button>
+              <button class="btn btn-secondary btn-sm" data-route="sunbelt" type="button">Sunbelt & Culture (AUS-LAX-HND)</button>
+            </div>
+          </div>
+
+          <div class="deal-kpi-grid" style="margin-top: 16px;">
+            <div class="kpi-card highlight">
+              <span class="kpi-label">TOTAL TOUR LEG ANCILLARY</span>
+              <span class="kpi-value" id="routeTotalAncillary">$1,420,000</span>
+              <span class="kpi-sub">Cumulative across all tour stops</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">TOTAL ATTENDANCE REACH</span>
+              <span class="kpi-value" id="routeTotalAttendance">60,000 Fans</span>
+              <span class="kpi-sub">Arena-scale leg projection</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">MULTI-CITY BRAND SYNERGY</span>
+              <span class="kpi-value" id="routeSynergyCount">3 Universal Brands</span>
+              <span class="kpi-sub">>90% affinity in all markets</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">AVERAGE AUDIENCE LIFT</span>
+              <span class="kpi-value" id="routeAvgLift">+41%</span>
+              <span class="kpi-sub">Unified cultural brand equity</span>
+            </div>
+          </div>
+
+          <div class="route-timeline" id="routeTimeline" style="margin-top: 24px;">
+            <!-- Dynamically populated route stops -->
+          </div>
+        </div>
+      </section>
+
       <!-- Qloo Telemetry & Raw API Inspector Section -->
       <section class="inspector-section hidden" id="inspectorSection">
         <div class="card">
@@ -479,7 +613,7 @@
             </div>
             <div class="stat-card">
               <span class="stat-label">METROPOLITAN MARKETS</span>
-              <span class="stat-value" id="inspectorCityCount" style="font-family: var(--font-mono);">7 Global Cities</span>
+              <span class="stat-value" id="inspectorCityCount" style="font-family: var(--font-mono);">8 Global Cities</span>
               <span class="stat-sub">Verified Venue Metadata</span>
             </div>
           </div>
@@ -497,32 +631,65 @@
 
     <!-- Modals -->
     <!-- API Key Modal -->
-    <div class="modal-overlay hidden" id="keyModal">
+    <div class="modal-overlay hidden" id="keyModal" role="dialog" aria-modal="true" aria-labelledby="keyModalTitle">
       <div class="modal-card">
         <div class="modal-header">
-          <h3>Configure Qloo API Key</h3>
+          <h3 id="keyModalTitle">Configure API Credentials</h3>
           <button class="btn-close" id="btnCloseKeyModal">✕</button>
         </div>
         <div class="modal-body">
-          <p class="modal-desc">Enter your Qloo Hackathon API key. The application will test connectivity against <code>https://hackathon.api.qloo.com/search</code> in real time.</p>
+          <p class="modal-desc">Configure your live Qloo Hackathon and Gemini AI credentials. Both systems support instant zero-configuration offline fallback.</p>
           <div class="input-group">
-            <label>QLOO API KEY (X-API-KEY)</label>
-            <input type="password" id="inputApiKey" placeholder="e.g. hack_2a558c0cb615...">
+            <label>QLOO HACKATHON API KEY (X-API-KEY)</label>
+            <input type="password" id="inputApiKey" placeholder="e.g. your_qloo_api_key_here">
+          </div>
+          <div class="input-group" style="margin-top: 12px;">
+            <label>GEMINI API KEY (AI CO-PILOT AGENT)</label>
+            <input type="password" id="inputGeminiKey" placeholder="e.g. your_gemini_api_key_here">
           </div>
           <div class="key-status-msg" id="keyValidationResult"></div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" id="btnCancelKey">Cancel</button>
-          <button class="btn btn-primary" id="btnSaveKey">Save & Validate Key</button>
+          <button class="btn btn-primary" id="btnSaveKey">Save & Validate Credentials</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MCP Integration Modal -->
+    <div class="modal-overlay hidden" id="mcpModal" role="dialog" aria-modal="true" aria-labelledby="mcpModalTitle">
+      <div class="modal-card modal-large">
+        <div class="modal-header">
+          <h3 id="mcpModalTitle">Model Context Protocol (MCP) Standard Integration</h3>
+          <button class="btn-close" id="btnCloseMcpModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc">TourCraft implements native JSON-RPC 2.0 stdio MCP tools. Wire TourCraft into <strong>Claude Desktop</strong>, <strong>Cursor</strong>, or any autonomous agent framework with zero npm runtime dependencies.</p>
+          
+          <div class="mcp-tools-list" style="display: flex; flex-direction: column; gap: 8px; margin: 12px 0;">
+            <div class="mcp-tool-pill" style="background: rgba(144,88,49,0.08); padding: 8px 12px; border-radius: 6px; font-size: 13px;"><code>tourcraft_generate</code>: Synthesize 24-hr cultural takeover, live stops & brand matrix</div>
+            <div class="mcp-tool-pill" style="background: rgba(144,88,49,0.08); padding: 8px 12px; border-radius: 6px; font-size: 13px;"><code>tourcraft_compare</code>: Calculate audience taste overlap & clash feasibility</div>
+            <div class="mcp-tool-pill" style="background: rgba(144,88,49,0.08); padding: 8px 12px; border-radius: 6px; font-size: 13px;"><code>tourcraft_recs</code>: Fetch multi-domain Qloo taste graph affinities</div>
+            <div class="mcp-tool-pill" style="background: rgba(144,88,49,0.08); padding: 8px 12px; border-radius: 6px; font-size: 13px;"><code>tourcraft_chat</code>: Conversational agent co-pilot grounded in Qloo</div>
+          </div>
+
+          <div class="input-group" style="margin-top: 16px;">
+            <label>CLAUDE DESKTOP CONFIGURATION (claude_desktop_config.json)</label>
+            <pre class="raw-code-block" id="mcpConfigSnippet" style="max-height: 140px; font-size: 12px;"></pre>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="btnCopyMcpSnippet">Copy Config JSON</button>
+          <button class="btn btn-primary" id="btnCloseMcpModalBtn">Done</button>
         </div>
       </div>
     </div>
 
     <!-- Export Rider Modal -->
-    <div class="modal-overlay hidden" id="exportModal">
+    <div class="modal-overlay hidden" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
       <div class="modal-card modal-large">
         <div class="modal-header">
-          <h3>Live Nation Tour Cultural Rider & Sponsor Proposal</h3>
+          <h3 id="exportModalTitle">Live Nation Tour Cultural Rider & Sponsor Proposal</h3>
           <button class="btn-close" id="btnCloseExportModal">✕</button>
         </div>
         <div class="modal-body">
@@ -554,6 +721,6 @@
     </footer>
   </div>
 
-  <script src="app.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>

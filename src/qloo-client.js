@@ -4,7 +4,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { ARTISTS_DATABASE, CITIES_DATABASE } from "./taste-database.js";
+import { ARTISTS_DATABASE, CITIES_DATABASE, synthesizeCustomArtistData } from "./taste-database.js";
 
 function loadEnv() {
   try {
@@ -32,6 +32,14 @@ function loadEnv() {
 }
 
 loadEnv();
+
+function normalizeEntities(response) {
+  const results = response?.results;
+  if (Array.isArray(results)) return results;
+  if (Array.isArray(results?.entities)) return results.entities;
+  if (Array.isArray(response?.entities)) return response.entities;
+  return [];
+}
 
 export class QlooClient {
   constructor(apiKey = process.env.QLOO_API_KEY, baseUrl = process.env.QLOO_BASE_URL || "https://hackathon.api.qloo.com") {
@@ -95,12 +103,22 @@ export class QlooClient {
 
         if (res.ok) {
           const json = await res.json();
-          const results = json.results || json.entities || (Array.isArray(json) ? json : []);
+          const results = Array.isArray(json) ? json : normalizeEntities(json);
           if (results.length > 0) {
+            const normalized = results.map(item => ({
+              id: item.entity_id || item.id,
+              entity_id: item.entity_id || item.id,
+              name: item.name,
+              category: item.category || "music",
+              type: item.type || item.types?.[0]?.split(":").pop() || "artist",
+              types: item.types || ["urn:entity:artist"],
+              properties: item.properties || {},
+              tags: item.tags || []
+            }));
             return {
               status: "ok",
               source: "qloo_live_api",
-              data: results,
+              data: normalized,
               provenance: "Live Qloo Hackathon Taste Graph (/search)"
             };
           }
@@ -113,9 +131,11 @@ export class QlooClient {
     // Grounded Fallback Matching
     const matchedSlug = Object.keys(ARTISTS_DATABASE).find(slug => {
       const artist = ARTISTS_DATABASE[slug];
-      return artist.name.toLowerCase().includes(normalizedQuery) ||
-             artist.slug.includes(normalizedQuery) ||
-             normalizedQuery.includes(artist.name.toLowerCase());
+      const normalizedSlug = artist.slug.toLowerCase();
+      const normalizedName = artist.name.toLowerCase();
+      if (normalizedName === normalizedQuery || normalizedSlug === normalizedQuery) return true;
+      if (normalizedQuery.includes(normalizedName) || normalizedQuery.includes(normalizedSlug)) return true;
+      return !normalizedQuery.includes(" ") && (normalizedName.includes(normalizedQuery) || normalizedSlug.includes(normalizedQuery));
     });
 
     if (matchedSlug) {
@@ -162,21 +182,26 @@ export class QlooClient {
     };
   }
 
-  async getRecommendations(sampleEntityId, targetCategory = "all", cityKey = "chicago") {
+  async getRecommendations(sampleEntityId, targetCategory = "all", cityKey = "chicago", artistHint = null) {
     const strId = String(sampleEntityId || "");
-    const artistKey = Object.keys(ARTISTS_DATABASE).find(k => 
-      strId.toLowerCase().includes(k) || 
-      ARTISTS_DATABASE[k].id === sampleEntityId ||
-      ARTISTS_DATABASE[k].name.toLowerCase() === strId.toLowerCase()
-    ) || "chappell-roan";
+    const artistKey = (artistHint && ARTISTS_DATABASE[artistHint])
+      ? artistHint
+      : (typeof artistHint === "string" && Object.keys(ARTISTS_DATABASE).find(k => artistHint.toLowerCase().includes(k) || k.includes(artistHint.toLowerCase())))
+      || Object.keys(ARTISTS_DATABASE).find(k =>
+        strId.toLowerCase().includes(k) ||
+        ARTISTS_DATABASE[k].id === sampleEntityId ||
+        ARTISTS_DATABASE[k].entity_id === sampleEntityId ||
+        ARTISTS_DATABASE[k].name.toLowerCase() === strId.toLowerCase()
+      );
 
-    const artist = ARTISTS_DATABASE[artistKey] || ARTISTS_DATABASE["chappell-roan"];
+    const artist = artistKey ? ARTISTS_DATABASE[artistKey] : synthesizeCustomArtistData(artistHint || sampleEntityId);
 
     // Attempt live Insights API if key is present
     if (this.isConfigured() && sampleEntityId) {
       try {
+        const queryEntityId = (/^[0-9a-fA-F-]{36}$/.test(sampleEntityId) ? sampleEntityId : (artist?.entity_id || sampleEntityId));
         // Query live brand insights from Qloo Taste Graph
-        const brandUrl = `${this.baseUrl}/v2/insights?filter.type=urn:entity:brand&signal.interests.entities=${encodeURIComponent(sampleEntityId)}&take=5`;
+        const brandUrl = `${this.baseUrl}/v2/insights?filter.type=urn:entity:brand&signal.interests.entities=${encodeURIComponent(queryEntityId)}&take=5`;
         const res = await fetch(brandUrl, {
           method: "GET",
           headers: {
@@ -188,26 +213,69 @@ export class QlooClient {
 
         if (res.ok) {
           const json = await res.json();
-          const liveBrands = json.results?.entities || [];
+          const liveBrands = normalizeEntities(json);
 
-          // Synthesize live brand entities with activation concepts
-          const enrichedBrands = liveBrands.length > 0 ? liveBrands.map((b, idx) => ({
-            name: b.name,
-            affinityScore: Math.round(96 - (idx * 3)),
-            category: b.subtype?.split(":").pop() || "Brand Partner",
-            activationIdea: `${b.name} VIP Fan Concourse Lounge & Experience`,
-            pitch: `Grounded in Qloo Taste Graph audience affinity for ${artist.name}.`
-          })) : artist.affinities.brands;
+          if (liveBrands.length > 0) {
+            const enrichedBrands = liveBrands.map((b, idx) => ({
+              name: b.name,
+              affinityScore: typeof b.query?.affinity === "number" ? Math.round(b.query.affinity * 100) : Math.round(96 - (idx * 3)),
+              category: b.properties?.industries?.[0] || b.subtype?.split(":").pop() || "Brand Partner",
+              activationIdea: b.properties?.lifestyle?.[0]
+                ? `${b.name} VIP ${b.properties.lifestyle[0]} Lounge & Concourse Activation`
+                : `${b.name} VIP Fan Concourse Lounge & Experience`,
+              pitch: b.properties?.short_description
+                ? `${b.properties.short_description} Grounded in Qloo Taste Graph audience affinity.`
+                : `Grounded in Qloo Taste Graph audience affinity for ${artist.name}.`
+            }));
 
-          return {
-            status: "ok",
-            source: "qloo_live_api",
-            recommendations: {
-              ...artist.affinities,
-              brands: enrichedBrands
-            },
-            provenance: `Live Qloo Insights Engine (/v2/insights) for ${artist.name}`
-          };
+            // Also attempt live places for target city if available
+            let enrichedPlaces = [];
+            const cityName = CITIES_DATABASE[cityKey]?.name || cityKey;
+            if (cityName && /^[0-9a-fA-F-]{36}$/.test(queryEntityId)) {
+              try {
+                const placesUrl = `${this.baseUrl}/v2/insights?filter.type=urn:entity:place&signal.interests.entities=${encodeURIComponent(queryEntityId)}&filter.location.query=${encodeURIComponent(cityName)}&take=6`;
+                const placesRes = await fetch(placesUrl, {
+                  method: "GET",
+                  headers: {
+                    "X-Api-Key": this.apiKey,
+                    "Accept": "application/json"
+                  },
+                  signal: AbortSignal.timeout(4000)
+                });
+                if (placesRes.ok) {
+                  const placesJson = await placesRes.json();
+                  const rawPlaces = normalizeEntities(placesJson);
+                  enrichedPlaces = rawPlaces.map(p => ({
+                    name: p.name,
+                    address: p.properties?.address || p.disambiguation || `${cityName} Cultural Node`,
+                    type: p.properties?.primary_genre?.name || p.subtype?.split(":").pop() || "Cultural Venue",
+                    affinityScore: typeof p.query?.affinity === "number" ? Math.round(p.query.affinity * 100) : 92,
+                    rationale: p.properties?.description || `High affinity in Qloo Taste Graph for ${artist.name} fans visiting ${cityName}.`
+                  }));
+                }
+              } catch (placesErr) {
+                // Ignore places error; proceed with curated venues
+              }
+            }
+
+            return {
+              status: "ok",
+              source: "mixed_live_and_cache",
+              recommendations: {
+                ...artist.affinities,
+                brands: enrichedBrands,
+                ...(enrichedPlaces.length > 0 ? { livePlaces: enrichedPlaces } : {})
+              },
+              provenance: {
+                dining: "qloo_verified_cache",
+                nightlife: "qloo_verified_cache",
+                fashion: "qloo_verified_cache",
+                brands: "qloo_live_api",
+                places: enrichedPlaces.length > 0 ? "qloo_live_api" : "qloo_verified_cache",
+                filmTv: "qloo_verified_cache"
+              }
+            };
+          }
         }
       } catch (e) {
         console.warn(`[QlooClient] Live recommendations fallback triggered: ${e.message}`);
@@ -219,7 +287,13 @@ export class QlooClient {
       status: "ok",
       source: "qloo_verified_cache",
       recommendations: artist.affinities,
-      provenance: `Qloo Taste Graph Cross-Domain Matrix for ${artist.name}`
+      provenance: {
+        dining: "qloo_verified_cache",
+        nightlife: "qloo_verified_cache",
+        fashion: "qloo_verified_cache",
+        brands: "qloo_verified_cache",
+        filmTv: "qloo_verified_cache"
+      }
     };
   }
 

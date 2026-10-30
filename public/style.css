@@ -1,35 +1,36 @@
 /* ==========================================================================
-   TourCraft Design System: Cultural Intelligence Console
-   Aesthetic: Luxury Editorial Backstage / High-Precision Culture Terminal
-   Accents: Electric Acid Chartreuse (#D4FF00) & Deep Obsidian (#07080A)
+   Wandor Design System: Cultural Intelligence Console
+   Aesthetic: Light Editorial Travel Studio / Terracotta & Frosted Glass
+   Accents: Terracotta (#905831) & Warm Paper (#FFFFFF)
    ========================================================================== */
 
 :root {
-  --bg-canvas: #07080A;
-  --bg-surface: #0E1015;
-  --bg-surface-hover: #141720;
-  --bg-surface-elevated: #1A1E29;
-  --bg-surface-active: #222736;
+  --bg-canvas: #FFFFFF;
+  --bg-surface: #FFFFFF;
+  --bg-surface-hover: #F7F5F2;
+  --bg-surface-elevated: #FFFFFF;
+  --bg-surface-active: #F1EDE8;
   
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.15);
-  --border-focus: #D4FF00;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-medium: rgba(0, 0, 0, 0.15);
+  --border-focus: #905831;
   
-  --text-main: #FFFFFF;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --text-dark: #000000;
+  --text-main: #1A1A1A;
+  --text-secondary: #4A4A4A;
+  --text-muted: #767676;
+  --text-dark: #FAFAFA;
   
-  --accent-acid: #D4FF00;
-  --accent-acid-glow: rgba(212, 255, 0, 0.18);
-  --accent-acid-tint: rgba(212, 255, 0, 0.08);
-  --accent-green: #00FF66;
-  --accent-amber: #FFB800;
-  --accent-red: #FF3344;
+  --accent-acid: #905831;
+  --accent-acid-glow: rgba(144, 88, 49, 0.18);
+  --accent-acid-tint: rgba(144, 88, 49, 0.08);
+  --accent-green: #6F8F5F;
+  --accent-amber: #B7791F;
+  --accent-red: #B33A3A;
   
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-wordmark: 'Special Elite', serif;
+  --font-mono: 'Geist', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   
   --radius-xs: 4px;
   --radius-sm: 6px;
@@ -37,8 +38,8 @@
   --radius-lg: 14px;
   --radius-full: 9999px;
   
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.35);
-  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.7);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.06);
+  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.12);
   --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-smooth: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -64,8 +65,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: 
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(212, 255, 0, 0.04) 0%, transparent 70%),
-    radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.02) 0%, transparent 40%);
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(144, 88, 49, 0.04) 0%, transparent 70%),
+    radial-gradient(circle at 100% 100%, rgba(0, 0, 0, 0.02) 0%, transparent 40%);
   background-attachment: fixed;
 }
 
@@ -134,12 +135,12 @@ body {
 }
 
 .brand-name {
-  font-family: var(--font-display);
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-family: var(--font-wordmark);
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--text-main);
-  line-height: 1.1;
+  line-height: 1;
 }
 
 .brand-name .accent-text {
@@ -224,12 +225,12 @@ body {
   background: var(--accent-acid);
   color: var(--text-dark);
   font-weight: 700;
-  box-shadow: 0 0 14px rgba(212, 255, 0, 0.2);
+  box-shadow: 0 0 14px rgba(144, 88, 49, 0.2);
 }
 
 .btn-primary:hover {
-  background: #E2FE52;
-  box-shadow: 0 0 20px rgba(212, 255, 0, 0.35);
+  background: #7A4828;
+  box-shadow: 0 0 20px rgba(144, 88, 49, 0.35);
 }
 
 .btn-sm {
@@ -326,7 +327,7 @@ body {
 .hero-title .highlight-lead {
   color: var(--accent-acid);
   text-decoration: underline;
-  text-decoration-color: rgba(212, 255, 0, 0.4);
+  text-decoration-color: rgba(144, 88, 49, 0.4);
   text-underline-offset: 6px;
 }
 
@@ -373,13 +374,13 @@ body {
 
 .mode-tab:hover {
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .mode-tab.active {
   background: var(--bg-surface-elevated);
   color: var(--text-main);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--border-medium);
 }
 
@@ -606,12 +607,12 @@ body {
   align-items: center;
   gap: 10px;
   transition: all var(--transition-fast);
-  box-shadow: 0 0 16px rgba(212, 255, 0, 0.25);
+  box-shadow: 0 0 16px rgba(144, 88, 49, 0.25);
 }
 
 .btn-generate:hover {
-  background: #E2FE52;
-  box-shadow: 0 0 24px rgba(212, 255, 0, 0.4);
+  background: #7A4828;
+  box-shadow: 0 0 24px rgba(144, 88, 49, 0.4);
   transform: translateY(-1px);
 }
 
@@ -624,7 +625,7 @@ body {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.12);
   padding: 2px 6px;
   border-radius: var(--radius-xs);
 }
@@ -1339,7 +1340,7 @@ body {
 }
 
 .btn-send:hover {
-  background: #E2FE52;
+  background: #7A4828;
 }
 
 /* ==========================================================================
@@ -1572,7 +1573,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -1745,4 +1746,120 @@ body {
 /* Helper Utilities */
 .hidden {
   display: none !important;
+}
+
+/* ==========================================================================
+   Promoter Deal Model & Tour Routing Planner
+   ========================================================================== */
+.deal-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--shadow-sm);
+}
+
+.kpi-card.highlight {
+  border-color: var(--accent-terracotta);
+  background: rgba(144, 88, 49, 0.04);
+}
+
+.kpi-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.kpi-value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent-terracotta);
+}
+
+.kpi-sub {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.capacity-tier-switcher {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-canvas);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-glass);
+}
+
+.tier-btn {
+  background: transparent;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
+}
+
+.tier-btn:hover {
+  color: var(--text-primary);
+}
+
+.tier-btn.active {
+  background: var(--bg-surface);
+  color: var(--accent-terracotta);
+  font-weight: 600;
+  box-shadow: var(--shadow-xs);
+}
+
+.deal-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .deal-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pitch-quote-box {
+  background: rgba(144, 88, 49, 0.04);
+  border-left: 3px solid var(--accent-terracotta);
+  padding: 14px 18px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.route-stop-card {
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.route-stop-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-terracotta);
+}
+
+.qloo-status-pill.llm-pill.live .status-dot {
+  background: #2b7a4b;
+}
+
+.qloo-status-pill.llm-pill.unconfigured .status-dot {
+  background: #b58900;
 }

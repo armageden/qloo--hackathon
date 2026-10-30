@@ -55,9 +55,16 @@ node cli.js compare "chappell-roan" "charli-xcx"
 ```
 
 ### 6. `mcp`
-Runs a standard JSON-RPC 2.0 Model Context Protocol stdio server exposing `tourcraft_generate`, `tourcraft_compare`, and `tourcraft_recs`.
+Runs a standard JSON-RPC 2.0 Model Context Protocol stdio server exposing `tourcraft_generate`, `tourcraft_compare`, `tourcraft_recs`, and `tourcraft_chat`.
 ```sh
 node cli.js mcp
+```
+
+#### MCP Tools Provided:
+- **`tourcraft_generate`**: Synthesizes a full 24-hour cultural takeover itinerary and executive sponsor matrix grounded in Qloo taste graph data for any artist and metropolitan tour market.
+- **`tourcraft_compare`**: Calculates mathematical audience overlap, shared multi-domain affinities, and festival co-billing feasibility verdicts between two performers.
+- **`tourcraft_recs`**: Retrieves multi-domain latent cultural affinities across dining, nightlife, fashion, and brands.
+- **`tourcraft_chat`**: Conversational co-pilot interface allowing client agents to ask targeted questions about audience demographics, aesthetic styling, negative sponsor risks, and reasoning.
 ```
 
 ## Model Context Protocol (MCP) Configuration
